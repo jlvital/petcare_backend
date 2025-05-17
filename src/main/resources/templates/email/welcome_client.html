@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>¡Bienvenido a PetCare360º!</title>
+    <style>
+        /* {{styles}} */
+    </style>
+</head>
+<body>
+    <div class="container welcome">
+        <h2 th:text="'¡Bienvenido/a, ' + ${displayName} + '!'">¡Bienvenido/a, Cliente!</h2>
+
+        <p>Gracias por unirte a PetCare360º.</p>
+        <p>Estamos emocionados de acompañarte en el cuidado de tus mascotas 🐾.</p>
+        <p>Ya puedes gestionar tus citas, vacunas y tratamientos desde tu panel de usuario.</p>
+
+        <div class="footer">
+            <p>¡Nos vemos pronto! 🐶🐱</p>
+            <div class="footer-logo">
+                <img src="cid:petcare-logo" alt="PetCare360º" style="width: 120px;">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

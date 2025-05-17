@@ -1,0 +1,62 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+body {
+    font-family: 'Montserrat', 'Segoe UI', sans-serif;
+    background-color: #f2f2f2;
+    color: #333;
+    padding: 20px;
+}
+
+.container {
+    background-color: #ffffff;
+    border-radius: 10px;
+    max-width: 600px;
+    margin: auto;
+    padding: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.container.welcome {
+    border-left: 6px solid #4CAF50;
+}
+
+.container.deactivation {
+    border-left: 6px solid #e76f51;
+}
+
+.container.reminder {
+    border-left: 6px solid #2196F3;
+}
+
+.container.recovery {
+    border-left: 6px solid #FF9800;
+}
+
+.details {
+    background-color: #f0f4f8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.footer {
+    margin-top: 30px;
+    font-size: 0.85em;
+    color: #777;
+    text-align: center;
+}
+
+.footer-logo {
+    margin-top: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #e76f51;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+}

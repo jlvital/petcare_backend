@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso al sistema - PetCare</title>
+    <style>
+        /* {{styles}} */
+    </style>
+</head>
+<body>
+    <div class="container welcome">
+        <h2 th:text="'Bienvenido/a al equipo, ' + ${displayName} + ' 👨‍⚕️👩‍⚕️'">Bienvenido/a al equipo</h2>
+
+        <p>Tu cuenta en PetCare360º ha sido creada.</p>
+
+        <p><strong>Usuario corporativo:</strong> <span th:text="${username}">usuario@petcare.com</span></p>
+        <p><strong>Contraseña:</strong> <span th:text="${password}">password123</span></p>
+
+        <p>Por motivos de seguridad, te recomendamos cambiar tu contraseña desde tu área privada.</p>
+
+        <p>
+            Accede desde aquí:
+            <a th:href="${loginUrl}" class="btn">Portal de empleados</a>
+        </p>
+
+        <div class="footer">
+            <p>¡Bienvenido/a a bordo! 🐾</p>
+            <div class="footer-logo">
+                <img src="cid:petcare-logo" alt="PetCare" style="width: 120px;">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
