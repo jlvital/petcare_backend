@@ -4,9 +4,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-<!--	╔════════════════════════════════════════╗
-    	║ 		Información del Proyecto	 	 ║
-    	╚════════════════════════════════════════╝		-->
+    <!-- ╔════════════════════════════════════════╗
+         ║      Información del Proyecto          ║
+         ╚════════════════════════════════════════╝ -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -24,15 +24,12 @@
         <java.version>21</java.version>
     </properties>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 			   Dependencias		 	 	 ║
-    	╚════════════════════════════════════════╝		-->
+    <!-- ╔════════════════════════════════════════╗
+         ║            Dependencias                ║
+         ╚════════════════════════════════════════╝ -->
     <dependencies>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 			  Spring Boot Core		 	 ║
-    	╚════════════════════════════════════════╝		-->
-       	
+        <!-- ╔════ Spring Boot Core ════╗ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -54,18 +51,15 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-core</artifactId>
+        </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 		 Seguridad: OAuth2 + JWT		 ║
-    	╚════════════════════════════════════════╝		-->
-    	
+        <!-- ╔════ Seguridad: OAuth2 + JWT ════╗ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
@@ -92,18 +86,17 @@
             <scope>runtime</scope>
         </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 		   		Hiberante				 ║
-    	╚════════════════════════════════════════╝		-->
-
+        <!-- ╔════ Base de datos: MariaDB + Hibernate ════╗ -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-community-dialects</artifactId>
         </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 				 Utilidades				 ║
-    	╚════════════════════════════════════════╝		-->      
+        <!-- ╔════ Utilidades comunes ════╗ -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -113,20 +106,14 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 		 		  Lombok				 ║
-    	╚════════════════════════════════════════╝		-->
-        
+        <!-- ╔════ Lombok (solo en desarrollo) ════╗ -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 		 Logging: SLF4J + Logback		 ║
-    	╚════════════════════════════════════════╝		-->
-        
+        <!-- ╔════ Logging: SLF4J + Logback ════╗ -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -136,10 +123,7 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 		 		  Testing 				 ║
-    	╚════════════════════════════════════════╝		-->
-        
+        <!-- ╔════ Testing ════╗ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -157,20 +141,14 @@
             <scope>test</scope>
         </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 	  Documentación: Swagger/OpenAPI	 ║
-    	╚════════════════════════════════════════╝		-->
-      
+        <!-- ╔════ Documentación API: Swagger / OpenAPI ════╗ -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.3.0</version>
         </dependency>
 
-<!-- 	╔════════════════════════════════════════╗
-    	║ 			Desarrollo: DevTools		 ║
-    	╚════════════════════════════════════════╝		-->
-        
+        <!-- ╔════ Desarrollo: Hot Reload / DevTools ════╗ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -180,10 +158,22 @@
 
     </dependencies>
 
+    <!-- ╔════════════════════════════════════════╗
+         ║        Plugins de construcción         ║
+         ╚════════════════════════════════════════╝ -->
     <build>
-  <!-- 	╔════════════════════════════════════════╗
-    	║ 				  Plugins			 	 ║
-    	╚════════════════════════════════════════╝		-->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.html</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -195,6 +185,14 @@
                             <artifactId>lombok</artifactId>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
@@ -211,13 +209,12 @@
                 </configuration>
             </plugin>
         </plugins>
-        
     </build>
-    
-  <!-- 	╔════════════════════════════════════════╗
-    	║ 	 Dependencias externas - MariaDB	 ║
-    	╚════════════════════════════════════════╝		-->
-        <dependencyManagement>
+
+    <!-- ╔════════════════════════════════════════╗
+         ║     Gestión centralizada de versiones  ║
+         ╚════════════════════════════════════════╝ -->
+    <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.mariadb.jdbc</groupId>
