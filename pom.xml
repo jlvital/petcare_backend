@@ -22,6 +22,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
     </properties>
 
     <!-- ╔════════════════════════════════════════╗
@@ -29,7 +30,7 @@
          ╚════════════════════════════════════════╝ -->
     <dependencies>
 
-        <!-- ╔════ Spring Boot Core ════╗ -->
+        <!-- ═════ Spring Boot Core ═════ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -59,7 +60,7 @@
             <artifactId>spring-session-core</artifactId>
         </dependency>
 
-        <!-- ╔════ Seguridad: OAuth2 + JWT ════╗ -->
+        <!-- ═════ Seguridad: OAuth2 + JWT ═════ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
@@ -86,7 +87,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ╔════ Base de datos: MariaDB + Hibernate ════╗ -->
+        <!-- ═════ MariaDB + Hibernate Dialects ═════ -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
@@ -96,7 +97,7 @@
             <artifactId>hibernate-community-dialects</artifactId>
         </dependency>
 
-        <!-- ╔════ Utilidades comunes ════╗ -->
+        <!-- ═════ Utilidades ═════ -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -106,14 +107,14 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
 
-        <!-- ╔════ Lombok (solo en desarrollo) ════╗ -->
+        <!-- ═════ Lombok ═════ -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- ╔════ Logging: SLF4J + Logback ════╗ -->
+        <!-- ═════ Logging ═════ -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -123,7 +124,7 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
 
-        <!-- ╔════ Testing ════╗ -->
+        <!-- ═════ Testing ═════ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -141,14 +142,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- ╔════ Documentación API: Swagger / OpenAPI ════╗ -->
+        <!-- ═════ Swagger / OpenAPI ═════ -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.3.0</version>
         </dependency>
 
-        <!-- ╔════ Desarrollo: Hot Reload / DevTools ════╗ -->
+        <!-- ═════ DevTools (Solo dev) ═════ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -159,18 +160,20 @@
     </dependencies>
 
     <!-- ╔════════════════════════════════════════╗
-         ║        Plugins de construcción         ║
+         ║         Configuración del Build       ║
          ╚════════════════════════════════════════╝ -->
     <build>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>**/*.html</include>
+                    <include>**/*.css</include>
+                    <include>**/*.png</include>
                     <include>**/*.properties</include>
                     <include>**/*.xml</include>
-                    <include>**/*.html</include>
                 </includes>
-                <filtering>true</filtering>
+                <filtering>false</filtering> <!-- No filtramos si no usas ${} en los archivos -->
             </resource>
         </resources>
 
@@ -179,40 +182,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <encoding>UTF-8</encoding>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <!-- ╔════════════════════════════════════════╗
-         ║     Gestión centralizada de versiones  ║
+         ║   Gestión de versiones centralizada    ║
          ╚════════════════════════════════════════╝ -->
     <dependencyManagement>
         <dependencies>

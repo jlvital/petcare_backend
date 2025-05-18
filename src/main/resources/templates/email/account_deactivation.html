@@ -9,17 +9,10 @@
 </head>
 <body>
     <div class="container deactivation">
-        <h2>Cuenta desactivada por inactividad ⏳</h2>
+        <p>Hola <span th:text="${name}">Usuario</span>,</p>
 
-        <p>Hola <span th:text="${displayName}">usuario</span>,</p>
-
-        <p>
-            Detectamos que no has iniciado sesión en PetCare360º durante más de 30 días, por lo que tu cuenta ha sido desactivada temporalmente.
-        </p>
-
-        <p>
-            Si deseas volver a utilizar nuestros servicios, simplemente haz clic en el siguiente enlace para reactivar tu cuenta:
-        </p>
+        <p>Detectamos que no has iniciado sesión en PetCare durante más de 30 días, por lo que tu cuenta ha sido desactivada temporalmente.</p>
+        <p>Si deseas volver a utilizar nuestros servicios, simplemente haz clic en el siguiente enlace para reactivar tu cuenta:</p>
 
         <p style="text-align: center;">
             <a th:href="${reactivationLink}" class="btn">Reactivar mi cuenta</a>

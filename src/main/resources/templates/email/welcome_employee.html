@@ -9,9 +9,9 @@
 </head>
 <body>
     <div class="container welcome">
-        <h2 th:text="'Bienvenido/a al equipo, ' + ${displayName} + ' 👨‍⚕️👩‍⚕️'">Bienvenido/a al equipo</h2>
+        <p>Hola <span th:text="${name}">Empleado</span>,</p>
 
-        <p>Tu cuenta en PetCare360º ha sido creada.</p>
+        <p>Tu cuenta en PetCare ha sido creada.</p>
 
         <p><strong>Usuario corporativo:</strong> <span th:text="${username}">usuario@petcare.com</span></p>
         <p><strong>Contraseña:</strong> <span th:text="${password}">password123</span></p>
@@ -24,7 +24,7 @@
         </p>
 
         <div class="footer">
-            <p>¡Bienvenido/a a bordo! 🐾</p>
+            <p>Gracias por confiar en <strong>PetCare</strong> 🐾</p>
             <div class="footer-logo">
                 <img src="cid:petcare-logo" alt="PetCare" style="width: 120px;">
             </div>

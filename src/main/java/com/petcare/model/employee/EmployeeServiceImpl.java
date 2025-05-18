@@ -23,69 +23,64 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private final UserRepository userRepository; // Sustituye a EmployeeRepository
-    private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+	private final UserRepository userRepository; // Sustituye a EmployeeRepository
+	private final PasswordEncoder passwordEncoder;
+	private final EmailService emailService;
 
-    @Override
-    public Employee findEmployeeById(Long id) {
-        Optional<User> optional = userRepository.findById(id);
+	@Override
+	public Employee findEmployeeById(Long id) {
+		Optional<User> optional = userRepository.findById(id);
 
-        if (!optional.isPresent() || !(optional.get() instanceof Employee)) {
-            log.warn("Empleado no encontrado con ID: {}", id);
-            throw new UserNotFoundException("Empleado no encontrado con ID: " + id);
-        }
+		if (!optional.isPresent() || !(optional.get() instanceof Employee)) {
+			log.warn("Empleado no encontrado con ID: {}", id);
+			throw new UserNotFoundException("Empleado no encontrado con ID: " + id);
+		}
 
-        return (Employee) optional.get();
-    }
+		return (Employee) optional.get();
+	}
 
-    @Override
-    public Employee findEmployeeByUsername(String username) {
-        Optional<User> optional = userRepository.findByUsername(username);
+	@Override
+	public Employee findEmployeeByUsername(String username) {
+		Optional<User> optional = userRepository.findByUsername(username);
 
-        if (!optional.isPresent() || !(optional.get() instanceof Employee)) {
-            log.warn("Empleado no encontrado con username: {}", username);
-            throw new UserNotFoundException("Empleado no encontrado con username: " + username);
-        }
+		if (!optional.isPresent() || !(optional.get() instanceof Employee)) {
+			log.warn("Empleado no encontrado con username: {}", username);
+			throw new UserNotFoundException("Empleado no encontrado con username: " + username);
+		}
 
-        return (Employee) optional.get();
-    }
+		return (Employee) optional.get();
+	}
 
-    @Override
-    public Employee registerEmployee(Employee newEmployee) {
-        // Generar correo corporativo si no viene ya asignado
-        String corporateUsername = generateCorporateUsername(
-            newEmployee.getName(),
-            newEmployee.getLastName1(),
-            newEmployee.getLastName2()
-        );
-        newEmployee.setUsername(corporateUsername + Constants.MAIL_DOMAIN);
-        newEmployee.setRole(Role.EMPLEADO);
+	@Override
+	public Employee registerEmployee(Employee newEmployee) {
+		// Generar correo corporativo si no viene ya asignado
+		String corporateUsername = generateCorporateUsername(newEmployee.getName(), newEmployee.getLastName1(),
+				newEmployee.getLastName2());
+		newEmployee.setUsername(corporateUsername + Constants.MAIL_DOMAIN);
+		newEmployee.setRole(Role.EMPLEADO);
 
-        // Generar y codificar la contraseña
-        String password = PasswordUtil.generateTemporaryPassword(8);
-        String encodedPassword = passwordEncoder.encode(password);
-        newEmployee.setPassword(encodedPassword);
+		// Generar y codificar la contraseña
+		String password = PasswordUtil.generateTemporaryPassword(8);
+		String encodedPassword = passwordEncoder.encode(password);
+		newEmployee.setPassword(encodedPassword);
 
-        // Guardar en base de datos
-        Employee saved = userRepository.save(newEmployee); // sigue funcionando correctamente
-        log.info("Empleado registrado con ID: {}", saved.getId());
+		// Guardar en base de datos
+		Employee saved = userRepository.save(newEmployee); // sigue funcionando correctamente
+		log.info("Empleado registrado con ID: {}", saved.getId());
 
-        emailService.sendWelcomeEmail(
-            saved.getRecoveryEmail(),
-            "EMPLEADO",
-            saved.getUsername(),
-            password
-        );
+		emailService.sendWelcomeEmail(saved.getRecoveryEmail(), 
+				"EMPLEADO", 
+				saved.getName(), 
+				saved.getUsername(),
+				password);
+		return saved;
+	}
 
-        return saved;
-    }
-
-    // ✅ Lógica centralizada para construir el username
-    private String generateCorporateUsername(String name, String lastName1, String lastName2) {
-        String n = name != null ? name.trim().toLowerCase().replace(" ", "") : "";
-        String l1 = lastName1 != null ? lastName1.trim().toLowerCase().replace(" ", "") : "";
-        String l2 = lastName2 != null ? lastName2.trim().toLowerCase().replace(" ", "") : "";
-        return n + "." + l1 + "." + l2;
-    }
+	// ✅ Lógica centralizada para construir el username
+	private String generateCorporateUsername(String name, String lastName1, String lastName2) {
+		String n = name != null ? name.trim().toLowerCase().replace(" ", "") : "";
+		String l1 = lastName1 != null ? lastName1.trim().toLowerCase().replace(" ", "") : "";
+		String l2 = lastName2 != null ? lastName2.trim().toLowerCase().replace(" ", "") : "";
+		return n + "." + l1 + "." + l2;
+	}
 }

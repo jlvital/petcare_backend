@@ -1,10 +1,10 @@
 package com.petcare.email;
 
-import jakarta.annotation.Nullable;
-
 public interface EmailService {
 
-	void sendWelcomeEmail(String recipientEmail, String role, String displayName, @Nullable String password);
+	public void sendWelcomeEmail(String recipientEmail, String role, String displayName, String username, String password);
+	
+	void sendWelcomeEmail(String recipientEmail, String role, String displayName, String password);
 
 	void sendPasswordRecoveryEmail(String recipientEmail, String token);
 
