@@ -1,28 +1,31 @@
 # ╔══════════════════════════════════════════════════╗
-# ║                 Build Stage                      ║
+# ║                  Build Stage                     ║
 # ╚══════════════════════════════════════════════════╝
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copia el archivo de configuración y el código fuente
-COPY pom.xml . 
-COPY src ./src
+# Aprovecha el caché de dependencias Maven (local .m2)
+VOLUME ["/root/.m2"]
 
-# Compila el proyecto (sin tests)
+# Copiamos el descriptor de dependencias y resolvemos primero
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copia el código fuente y empaqueta (sin tests)
+COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ╔══════════════════════════════════════════════════╗
-# ║                  Run Stage                       ║
+# ║                     Run Stage                    ║
 # ╚══════════════════════════════════════════════════╝
 FROM eclipse-temurin:21.0.2_13-jdk
 WORKDIR /app
 
-# Copia el JAR compilado desde la etapa anterior
+# Copia el artefacto generado en la etapa anterior
 COPY --from=build /app/target/PetCare-0.0.1-SNAPSHOT.jar app.jar
 
-# Render establece el puerto automáticamente, pero lo definimos por si se usa localmente
 ENV PORT=10000
 EXPOSE ${PORT}
 
-# Comando para iniciar la aplicación
+# ✅ Entrada segura (Render inyecta el PORT automáticamente)
 ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT}"]
