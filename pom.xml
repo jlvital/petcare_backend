@@ -1,12 +1,11 @@
+<!-- ╔════════════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                            Project Information                             ║ -->
+<!-- ╚════════════════════════════════════════════════════════════════════════════╝ -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
-    <!-- ╔════════════════════════════════════════╗
-         ║      Información del Proyecto          ║
-         ╚════════════════════════════════════════╝ -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -18,19 +17,24 @@
     <artifactId>PetCare</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>PetCare</name>
-    <description>Aplicación web diseñada para la gestión del bienestar de las mascotas.</description>
+    <description>Web application for pet wellness management.</description>
 
+<!-- ╔════════════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                              Global Properties                             ║ -->
+<!-- ╚════════════════════════════════════════════════════════════════════════════╝ -->
     <properties>
         <java.version>21</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
     </properties>
 
-    <!-- ╔════════════════════════════════════════╗
-         ║            Dependencias                ║
-         ╚════════════════════════════════════════╝ -->
+<!-- ╔════════════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                               Dependencies                                 ║ -->
+<!-- ╚════════════════════════════════════════════════════════════════════════════╝ -->
     <dependencies>
 
-        <!-- ═════ Spring Boot Core ═════ -->
+        			<!-- ╔════════════════════════════╗ -->
+        			<!-- ║     Spring Boot Core       ║ -->
+        			<!-- ╚════════════════════════════╝ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -60,7 +64,9 @@
             <artifactId>spring-session-core</artifactId>
         </dependency>
 
-        <!-- ═════ Seguridad: OAuth2 + JWT ═════ -->
+			        <!-- ╔════════════════════════════╗ -->
+        			<!-- ║     OAuth2 + JWT           ║ -->
+        			<!-- ╚════════════════════════════╝ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
@@ -87,17 +93,26 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ═════ MariaDB + Hibernate Dialects ═════ -->
-        <dependency>
+        			<!-- ╔════════════════════════════╗ -->
+        			<!-- ║     Database & Dialects    ║ -->
+        			<!-- ╚════════════════════════════╝ -->
+        <!--<dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-community-dialects</artifactId>
         </dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<!--<version>42.7.3</version>-->
+		</dependency>
 
-        <!-- ═════ Utilidades ═════ -->
+			        <!-- ╔════════════════════════════╗ -->
+        			<!-- ║        Utilities           ║ -->
+        			<!-- ╚════════════════════════════╝ -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -107,14 +122,18 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
 
-        <!-- ═════ Lombok ═════ -->
+        			<!-- ╔════════════════════════════╗ -->
+        			<!-- ║     Lombok      			  ║ -->
+        			<!-- ╚════════════════════════════╝ -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- ═════ Logging ═════ -->
+			        <!-- ╔════════════════════════════╗ -->
+       	 			<!-- ║     		Logging           ║ -->
+        			<!-- ╚════════════════════════════╝ -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -124,32 +143,9 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
 
-        <!-- ═════ Testing ═════ -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- ═════ Swagger / OpenAPI ═════ -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-
-        <!-- ═════ DevTools (Solo dev) ═════ -->
+        			<!-- ╔════════════════════════════╗ -->
+        			<!-- ║    	    Dev Tools         ║ -->
+        			<!-- ╚════════════════════════════╝ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -159,9 +155,9 @@
 
     </dependencies>
 
-    <!-- ╔════════════════════════════════════════╗
-         ║         Configuración del Build       ║
-         ╚════════════════════════════════════════╝ -->
+<!-- ╔════════════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                                 	Build                                     ║ -->
+<!-- ╚════════════════════════════════════════════════════════════════════════════╝ -->
     <build>
         <resources>
             <resource>
@@ -173,7 +169,7 @@
                     <include>**/*.properties</include>
                     <include>**/*.xml</include>
                 </includes>
-                <filtering>false</filtering> <!-- No filtramos si no usas ${} en los archivos -->
+                <filtering>false</filtering>
             </resource>
         </resources>
 
@@ -193,9 +189,9 @@
         </plugins>
     </build>
 
-    <!-- ╔════════════════════════════════════════╗
-         ║   Gestión de versiones centralizada    ║
-         ╚════════════════════════════════════════╝ -->
+<!-- ╔════════════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                      Centralized Dependency Versions                       ║ -->
+<!-- ╚════════════════════════════════════════════════════════════════════════════╝ -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -203,6 +199,11 @@
                 <artifactId>mariadb-java-client</artifactId>
                 <version>3.5.3</version>
             </dependency>
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>42.7.3</version>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 

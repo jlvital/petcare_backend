@@ -1,30 +1,28 @@
-# =============================
-# Etapa de construcción (Build Stage)
-# =============================
+# ╔══════════════════════════════════════════════════╗
+# ║                 Build Stage                      ║
+# ╚══════════════════════════════════════════════════╝
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copiar solo lo necesario primero para aprovechar cacheo
-COPY pom.xml .
+# Copia el archivo de configuración y el código fuente
+COPY pom.xml . 
 COPY src ./src
 
-# Compilar la aplicación (sin tests)
+# Compila el proyecto (sin tests)
 RUN mvn clean package -DskipTests
 
-# =============================
-# Etapa de ejecución (Run Stage)
-# =============================
+# ╔══════════════════════════════════════════════════╗
+# ║                  Run Stage                       ║
+# ╚══════════════════════════════════════════════════╝
 FROM eclipse-temurin:21.0.2_13-jdk
 WORKDIR /app
 
-# Copiar el .jar generado explícitamente
+# Copia el JAR compilado desde la etapa anterior
 COPY --from=build /app/target/PetCare-0.0.1-SNAPSHOT.jar app.jar
 
-# Puerto que Render define por variable de entorno PORT
+# Render establece el puerto automáticamente, pero lo definimos por si se usa localmente
 ENV PORT=10000
-
-# Expone el puerto para ejecutar en local (Render lo ignora)
 EXPOSE ${PORT}
 
-# Comando de ejecución adaptado al puerto dinámico de Render
+# Comando para iniciar la aplicación
 ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT}"]
