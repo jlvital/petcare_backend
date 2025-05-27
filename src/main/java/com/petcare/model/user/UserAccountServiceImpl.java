@@ -26,9 +26,9 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public void activateAccount(Long id) {
         User user = findUserById(id);
-        user.setAccountStatus(AccountStatus.ACTIVADA);
+        user.setAccountStatus(AccountStatus.ACTIVA);
         saveForUserType(user);
-        log.info("Cuenta activada para el usuario con ID: {}", id);
+        log.info("Cuenta ACTIVA para el usuario con ID: {}", id);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public List<User> findInactiveUsers(int days) {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(days);
-        return userRepository.findByLastAccessBeforeAndAccountStatus(cutoff, AccountStatus.ACTIVADA);
+        return userRepository.findByLastAccessBeforeAndAccountStatus(cutoff, AccountStatus.ACTIVA);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         user.setFailedAttempts(0);
 
         if (user.getAccountStatus() == AccountStatus.BLOQUEADA) {
-            user.setAccountStatus(AccountStatus.ACTIVADA);
+            user.setAccountStatus(AccountStatus.ACTIVA);
             log.info("Cuenta desbloqueada para el usuario: {}", email);
         }
 

@@ -19,7 +19,7 @@ import com.petcare.model.client.Client;
 import com.petcare.model.client.dto.ClientRegistrationRequest;
 import com.petcare.model.client.ClientService;
 import com.petcare.model.user.User;
-import com.petcare.model.user.UserServiceAccount;
+import com.petcare.model.user.UserAccountService;
 import com.petcare.model.user.UserService;
 import com.petcare.utils.Constants;
 
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthServiceImpl implements AuthService {
 
 	private final UserService userService;
-	private final UserServiceAccount userServiceAccount;
+	private final UserAccountService userAccountService;
 	private final ClientService clientService;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 	        return false;
 	    }
 
-	    Optional<User> userOpt = userServiceAccount.findByRecoveryToken(token);
+	    Optional<User> userOpt = userAccountService.findByRecoveryToken(token);
 	    if (userOpt.isEmpty()) {
 	        log.warn("No se encontró usuario con token de reactivación: {}", token);
 	        return false;
@@ -142,7 +142,7 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public boolean resetPasswordWithToken(String token, String newPassword) {
-	    Optional<User> optionalUser = userServiceAccount.findByRecoveryToken(token);
+	    Optional<User> optionalUser = userAccountService.findByRecoveryToken(token);
 	    if (optionalUser.isEmpty()) return false;
 
 	    User user = optionalUser.get();
@@ -183,7 +183,7 @@ public class AuthServiceImpl implements AuthService {
 	public void requestPasswordRecovery(String email) {
 	    String token = UUID.randomUUID().toString();
 	    LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
-	    Optional<User> optionalUser = userServiceAccount.findByEmailForRecovery(email);
+	    Optional<User> optionalUser = userAccountService.findByEmailForRecovery(email);
 	    if (optionalUser.isEmpty()) {
 	        throw new UserNotFoundException("No se encontró ningún usuario con ese correo.");
 	    }
