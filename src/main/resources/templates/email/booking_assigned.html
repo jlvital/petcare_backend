@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva cita asignada - PetCare</title>
+    <style>
+        /* {{styles}} */
+    </style>
+</head>
+<body>
+    <div class="container info">
+
+        <p>
+            Se te ha asignado una nueva cita con <strong th:text="${clientName}">Pilar León</strong>,
+            propietaria de <strong th:text="${petName}">Lleò</strong>.
+        </p>
+
+        <div class="details">
+            <p><strong>📅 Fecha:</strong> <span th:text="${date}">10/06/2025</span></p>
+            <p><strong>🕒 Hora:</strong> <span th:text="${time}">11:30</span></p>
+            <p><strong>📍 Tipo:</strong> <span th:text="${type}">Consulta</span></p>
+        </div>
+
+        <p>Por favor, revisa tu agenda desde tu área privada.</p>
+
+        <div class="footer">
+            <p>Gracias por formar parte de <strong>PetCare</strong> 🐾</p>
+            <div class="footer-logo">
+                <img src="cid:petcare-logo" alt="PetCare" style="width: 120px;">
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

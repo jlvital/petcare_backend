@@ -1,4 +1,3 @@
-
 package com.petcare.model.pet;
 
 import java.util.List;

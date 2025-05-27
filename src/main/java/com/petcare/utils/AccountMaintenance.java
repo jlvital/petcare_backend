@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.petcare.model.user.User;
 import com.petcare.model.user.UserService;
-import com.petcare.model.user.UserAccountService;
+import com.petcare.model.user.UserServiceAccount;
 import com.petcare.enums.AccountStatus;
 import com.petcare.email.EmailService;
 
@@ -21,12 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountMaintenance {
 
     private final UserService userService;
-    private final UserAccountService userAccountService;
+    private final UserServiceAccount userServiceAccount;
     private final EmailService emailService;
 
-    @Scheduled(cron = "0 0 3 * * *") /* Cada día a las 3:00 am */
+    @Scheduled(cron = "0 0 9 * * *") /* Cada día a las 9:00 am */
     public void deactivateInactiveUsers() {
-        List<User> inactiveUsers = userAccountService.findInactiveUsers(30);
+        List<User> inactiveUsers = userServiceAccount.findInactiveUsers(30);
         for (User User : inactiveUsers) {
             User.setAccountStatus(AccountStatus.DESACTIVADA);
 

@@ -4,16 +4,11 @@ import com.petcare.enums.AccountStatus;
 import com.petcare.enums.Role;
 import com.petcare.exceptions.UserAlreadyExistsException;
 import com.petcare.exceptions.UserNotFoundException;
-import com.petcare.model.client.Client;
-import com.petcare.model.client.ClientRepository;
-import com.petcare.model.employee.Employee;
+import com.petcare.model.client.*;
+import com.petcare.model.employee.*;
 import com.petcare.model.employee.dto.EmployeeRegistrationRequest;
-import com.petcare.model.employee.EmployeeRepository;
-import com.petcare.model.employee.EmployeeService;
-import com.petcare.model.user.User;
-import com.petcare.model.user.UserRepository;
-import com.petcare.model.user.UserService;
-import com.petcare.admin.dto.AdminStatsResponse;
+import com.petcare.model.user.*;
+import com.petcare.admin.dto.BookingStatsResponse;
 import com.petcare.email.EmailService;
 
 import jakarta.transaction.Transactional;
@@ -70,9 +65,9 @@ public class AdminServiceImpl implements AdminService {
         }
 
         User User = userOptional.get();
-        User.setAccountStatus(AccountStatus.ACTIVADA); 
-        userService.saveForUserType(User);             
-        log.info("Cuenta activada para el usuario con ID: {}", userId);
+        User.setAccountStatus(AccountStatus.ACTIVA);
+        userService.saveForUserType(User);
+        log.info("Cuenta ACTIVA para el usuario con ID: {}", userId);
     }
 
     @Override
@@ -84,9 +79,9 @@ public class AdminServiceImpl implements AdminService {
         }
 
         User User = userOptional.get();
-        User.setAccountStatus(AccountStatus.BLOQUEADA); 
-        userService.saveForUserType(User);               
-        log.info("Cuenta desactivada para el usuario con ID: {}", userId);
+        User.setAccountStatus(AccountStatus.BLOQUEADA);
+        userService.saveForUserType(User);
+        log.info("Cuenta desACTIVA para el usuario con ID: {}", userId);
     }
     @Override
     public void deleteUser(Long userId) {
@@ -176,7 +171,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public AdminStatsResponse getDashboardStats() {
+    public BookingStatsResponse getDashboardStats() {
         return null;
     }
 }

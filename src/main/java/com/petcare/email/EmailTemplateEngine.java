@@ -11,8 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Componente que gestiona la carga y renderizado de plantillas HTML de correo usando Thymeleaf.
+ * Configura la carpeta de plantillas, codificación y modo de procesamiento.
+ */
 @Component
-
 public class EmailTemplateEngine {
 
     private final TemplateEngine templateEngine;
@@ -23,12 +26,19 @@ public class EmailTemplateEngine {
         resolver.setSuffix(".html");
         resolver.setTemplateMode("HTML");
         resolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        resolver.setCheckExistence(true);
+        resolver.setCheckExistence(true); // Evita fallos silenciosos si la plantilla no existe
 
         this.templateEngine = new SpringTemplateEngine();
         this.templateEngine.setTemplateResolver(resolver);
     }
 
+    /**
+     * Renderiza una plantilla de correo a partir de un Enum {@link EmailTemplate} y un mapa de variables.
+     *
+     * @param template  plantilla definida en el enum EmailTemplate
+     * @param variables mapa clave-valor con los datos que serán reemplazados en el HTML
+     * @return el HTML renderizado como String
+     */
     public String render(EmailTemplate template, Map<String, Object> variables) {
         Context context = new Context(Locale.getDefault());
         context.setVariables(variables);

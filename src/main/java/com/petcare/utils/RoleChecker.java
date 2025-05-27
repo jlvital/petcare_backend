@@ -4,25 +4,29 @@ import com.petcare.enums.Role;
 import com.petcare.model.user.User;
 
 /**
- * Clase utilitaria que centraliza la verificación de roles de usuarios.
- * Evita el uso disperso de instanceof o comparaciones directas con enums.
+ * Utilidad centralizada para comprobar el rol de un usuario.
  */
+public final class RoleChecker {
 
-public class RoleChecker {
+	private RoleChecker() {
+		// Clase utilitaria: no instanciable
+	}
 
-    private RoleChecker() {
-        /* Constructor privado para que no se instancie */
-    }
+	/** Comprobación genérica de rol */
+	public static boolean is(User user, Role expectedRole) {
+		return user != null && expectedRole != null && expectedRole.equals(user.getRole());
+	}
 
-    public static boolean isClient(User user) {
-        return user != null && user.getRole() == Role.CLIENTE;
-    }
+	/** Comprobaciones específicas */
+	public static boolean isAdmin(User user) {
+		return is(user, Role.ADMIN);
+	}
 
-    public static boolean isEmployee(User user) {
-        return user != null && user.getRole() == Role.EMPLEADO;
-    }
+	public static boolean isEmployee(User user) {
+		return is(user, Role.EMPLEADO);
+	}
 
-    public static boolean isAdmin(User user) {
-        return user != null && user.getRole() == Role.ADMIN;
-    }
+	public static boolean isClient(User user) {
+		return is(user, Role.CLIENTE);
+	}
 }

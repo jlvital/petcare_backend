@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cita confirmada - PetCare</title>
+    <style>
+        /* {{styles}} */
+    </style>
+</head>
+<body>
+    <div class="container confirmation">
+
+        <p>Hola <span th:text="${clientName}">Usuario</span>,</p>
+
+        <p>🐾 Tu próxima cita:</p>
+
+        <div class="details">
+            <p><strong>📅 Fecha:</strong> <span th:text="${date}">10/06/2025</span></p>
+            <p><strong>🕒 Hora:</strong> <span th:text="${time}">10:30</span></p>
+            <p><strong>👩 Profesional:</strong> <span th:text="${veterinarianName}">Laura García</span></p>
+            <p><strong>📍 Tipo:</strong> <span th:text="${type}">Consulta</span></p>
+        </div>
+
+        <!-- Mostrar estado SOLO si es CANCELADA o ANULADA -->
+        <div th:if="${status != null and status.name() != 'CONFIRMADA'}" class="status-info">
+            <p><strong>Estado:</strong> <span th:text="${status}">Cancelada</span></p>
+            <p th:if="${status.name() == 'CANCELADA'}">La cita ha sido cancelada por el cliente.</p>
+            <p th:if="${status.name() == 'ANULADA'}">La cita ha sido anulada por la clínica.</p>
+        </div>
+
+        <p>Si necesitas modificar o cancelar tu cita, puedes hacerlo desde tu área privada.</p>
+		
+		<p>Y recuerda, si así lo indicaste, recibirás un recordatorio 24 horas antes de la cita.</p>
+
+        <div class="footer">
+            <p>Gracias por confiar en <strong>PetCare</strong> 🐾</p>
+            <div class="footer-logo">
+                <img src="cid:petcare-logo" alt="PetCare" style="width: 120px;">
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

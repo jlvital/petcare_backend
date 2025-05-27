@@ -1,12 +1,12 @@
 package com.petcare.enums;
 
 public enum AccountStatus {
-	
-    ACTIVADA, 
-    BLOQUEADA, 
+
+    ACTIVA,
+    BLOQUEADA,
     DESACTIVADA;
 
     public boolean isActive() {
-        return this == ACTIVADA;
+        return this == ACTIVA;
     }
 }

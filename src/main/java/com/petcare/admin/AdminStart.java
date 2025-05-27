@@ -48,7 +48,7 @@ public class AdminStart {
         admin.setPassword(passwordEncoder.encode(password));
         admin.setRecoveryEmail(systemAdmin.getRecoveryEmail());
         admin.setRole(Role.ADMIN);
-        admin.setAccountStatus(AccountStatus.ACTIVADA);
+        admin.setAccountStatus(AccountStatus.ACTIVA);
 
         userService.saveForUserType(admin);
         log.info("Administrador creado correctamente con email: {}", email);

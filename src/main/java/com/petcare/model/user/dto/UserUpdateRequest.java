@@ -13,7 +13,7 @@ public class UserUpdateRequest {
     private String name;
     private String lastName1;
     private String lastName2;
-    private String phoneNumber;           // Cliente y Empleado
-    private String profilePictureUrl;     // Solo Cliente
-    private String address;               // Solo Cliente
+    private String phoneNumber;           
+    private String profilePictureUrl;     
+    private String address;               
 }

@@ -5,7 +5,7 @@ import java.util.*;
 
 import com.petcare.config.Auditable;
 import com.petcare.enums.PetGender;
-import com.petcare.model.appointment.Appointment;
+import com.petcare.model.booking.Booking;
 import com.petcare.model.client.Client;
 
 import jakarta.persistence.*;
@@ -62,5 +62,5 @@ public class Pet extends Auditable {
     private Client client;
 
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Appointment> appointments = new ArrayList<>();
+    private List<Booking> bookings = new ArrayList<>();
 }

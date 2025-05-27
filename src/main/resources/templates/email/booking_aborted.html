@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cita anulada por la clínica</title>
+    <style>
+        /* {{styles}} */
+    </style>
+</head>
+<body>
+    <div class="container aborted">
+        <p>Hola <span th:text="${clientName}">Cliente</span>,</p>
+
+        <p>
+            Lamentamos informarte que <strong><span th:text="${employeeName}">Nombre del Profesional</span></strong>
+            se ha visto obligado a <strong>anular</strong> la cita reservada para el día
+            <strong><span th:text="${date}">10/06/2025</span></strong> a las
+            <strong><span th:text="${time}">10:30</span></strong>.
+        </p>
+
+        <p>Sentimos lo ocurrido. Acepta nuestras disculpas.</p>
+
+        <p>
+            Puedes acceder a tu área personal o hacer clic en el siguiente enlace para programar una nueva cita:
+        </p>
+
+        <p style="text-align: center;">
+            <a th:href="${rescheduleLink}" class="btn">Reprogramar mi cita</a>
+        </p>
+
+        <div class="footer">
+            <p>Gracias por tu confianza en <strong>PetCare</strong> 🐾</p>
+            <div class="footer-logo">
+                <img src="cid:petcare-logo" alt="PetCare" style="width: 120px;">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

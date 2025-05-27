@@ -3,14 +3,14 @@ package com.petcare.model.client;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.petcare.model.client.dto.ClientUpdateRequest;
 import com.petcare.model.pet.Pet;
+import com.petcare.validations.ClientValidator;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,31 +20,66 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClientController {
 
-    private final ClientService clientService;
+	private final ClientService clientService;
 
-	    @GetMapping("/dashboard")
-    public ResponseEntity<String> getClientDashboard(@AuthenticationPrincipal Client client) {
-        if (client == null) {
-            return ResponseEntity.status(401).body("No autorizado");
-        }
-        return ResponseEntity.ok("Bienvenido al panel del cliente, " + client.getName());
-    }
+	// ╔══════════════════════════════════════════════════════════════╗
+	// ║ PANEL DEL CLIENTE 											  ║
+	// ╚══════════════════════════════════════════════════════════════╝
+	@GetMapping("/dashboard")
+	@PreAuthorize("hasRole('CLIENTE')")
+	public ResponseEntity<String> getClientDashboard(@AuthenticationPrincipal Client client) {
+		ClientValidator.validateAuthenticatedClient(client);
+		log.info("Acceso concedido al panel del cliente ID {}", client.getId());
+		return ResponseEntity.ok("Bienvenido al panel del cliente, " + client.getName());
+	}
 
-    @GetMapping("/pets")
-    public ResponseEntity<List<Pet>> getMyPets(@AuthenticationPrincipal Client client) {
-        if (client == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        List<Pet> pets = clientService.getPetsOfClient(client);
-        return pets.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(pets);
-    }
+	// ╔══════════════════════════════════════════════════════════════╗
+	// ║ ACTUALIZACIÓN DEL PERFIL									  ║
+	// ╚══════════════════════════════════════════════════════════════╝
+	@PutMapping("/profile")
+	@PreAuthorize("hasRole('CLIENTE')")
+	public ResponseEntity<String> updateClientProfile(@RequestBody ClientUpdateRequest request,
+			@AuthenticationPrincipal Client client) {
+		ClientValidator.validateAuthenticatedClient(client);
+		clientService.updateClientProfile(client, request);
+		log.info("Cliente ID {} actualizó su perfil correctamente", client.getId());
+		return ResponseEntity.ok("Perfil actualizado correctamente.");
+	}
 
-    @PostMapping("/pets")
-    public ResponseEntity<Pet> addPet(@RequestBody Pet pet, @AuthenticationPrincipal Client client) {
-        if (client == null || pet == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        Pet addPet = clientService.registerPet(client, pet);
-        return ResponseEntity.ok(addPet);
-    }
+	// ╔══════════════════════════════════════════════════════════════╗
+	// ║ LISTADO DE MASCOTAS DEL CLIENTE ║
+	// ╚══════════════════════════════════════════════════════════════╝
+	@GetMapping("/pets")
+	@PreAuthorize("hasRole('CLIENTE')")
+	public ResponseEntity<List<Pet>> getMyPets(@AuthenticationPrincipal Client client) {
+		ClientValidator.validateAuthenticatedClient(client);
+
+		List<Pet> pets = clientService.getPetsOfClient(client);
+
+		if (pets.isEmpty()) {
+			log.info("Cliente ID {} no tiene mascotas registradas.", client.getId());
+			return ResponseEntity.noContent().build();
+		}
+
+		log.info("Cliente ID {} solicitó su lista de mascotas ({} registradas).", client.getId(), pets.size());
+		return ResponseEntity.ok(pets);
+	}
+
+	// ╔══════════════════════════════════════════════════════════════╗
+	// ║ REGISTRO DE NUEVA MASCOTA ║
+	// ╚══════════════════════════════════════════════════════════════╝
+	@PostMapping("/pets")
+	@PreAuthorize("hasRole('CLIENTE')")
+	public ResponseEntity<Pet> addPet(@RequestBody Pet pet, @AuthenticationPrincipal Client client) {
+		ClientValidator.validateAuthenticatedClient(client);
+
+		if (pet == null) {
+			log.warn("Cliente ID {} envió datos de mascota nulos.", client.getId());
+			return ResponseEntity.badRequest().build();
+		}
+
+		Pet savedPet = clientService.registerPet(client, pet);
+		log.info("Cliente ID {} registró nueva mascota con ID {}", client.getId(), savedPet.getId());
+		return ResponseEntity.ok(savedPet);
+	}
 }

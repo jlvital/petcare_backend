@@ -5,5 +5,4 @@ public enum Profile {
 	VETERINARIO, 
 	AUXILIAR, 
 	TECNICO;
-
 }

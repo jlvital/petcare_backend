@@ -1,5 +1,7 @@
 package com.petcare.model.employee;
 
+import com.petcare.model.employee.dto.EmployeeUpdateRequest;
+
 public interface EmployeeService {
 
     Employee findEmployeeById(Long id);
@@ -14,4 +16,7 @@ public interface EmployeeService {
     Employee findEmployeeByUsername(String username);
 
     Employee registerEmployee(Employee employee);
+    
+    void updateEmployeeProfile(Employee employee, EmployeeUpdateRequest request);
+
 }

@@ -19,7 +19,7 @@ import com.petcare.model.client.Client;
 import com.petcare.model.client.dto.ClientRegistrationRequest;
 import com.petcare.model.client.ClientService;
 import com.petcare.model.user.User;
-import com.petcare.model.user.UserAccountService;
+import com.petcare.model.user.UserServiceAccount;
 import com.petcare.model.user.UserService;
 import com.petcare.utils.Constants;
 
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthServiceImpl implements AuthService {
 
 	private final UserService userService;
-	private final UserAccountService userAccountService;
+	private final UserServiceAccount userServiceAccount;
 	private final ClientService clientService;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
 	        null
 	    );
 
-	    return new AuthResponse(token, client.getName(), client.getUsername(), client.getRole().name());
+	    return new AuthResponse(token, client.getId(),client.getName(), client.getUsername(), client.getRole());
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
 	    userService.saveForUserType(user);
 
 	    String token = jwtUtil.generateTokenByUser(user);
-	    return new AuthResponse(token, user.getName(), user.getUsername(), user.getRole().name());
+	    return new AuthResponse(token, user.getId(), user.getName(), user.getUsername(), user.getRole());
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 	        return false;
 	    }
 
-	    Optional<User> userOpt = userAccountService.findByRecoveryToken(token);
+	    Optional<User> userOpt = userServiceAccount.findByRecoveryToken(token);
 	    if (userOpt.isEmpty()) {
 	        log.warn("No se encontró usuario con token de reactivación: {}", token);
 	        return false;
@@ -118,12 +118,12 @@ public class AuthServiceImpl implements AuthService {
 	        return false;
 	    }
 
-	    user.setAccountStatus(AccountStatus.ACTIVADA);
+	    user.setAccountStatus(AccountStatus.ACTIVA);
 	    user.setRecoveryToken(null);
 	    user.setRecoveryTokenExpiration(null);
 	    user.setLastAccess(LocalDateTime.now());
 	    userService.saveForUserType(user);
-	    log.info("Cuenta reactivada correctamente para usuario: {}", user.getUsername());
+	    log.info("Cuenta reACTIVA correctamente para usuario: {}", user.getUsername());
 	    return true;
 	}
 
@@ -142,7 +142,7 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public boolean resetPasswordWithToken(String token, String newPassword) {
-	    Optional<User> optionalUser = userAccountService.findByRecoveryToken(token);
+	    Optional<User> optionalUser = userServiceAccount.findByRecoveryToken(token);
 	    if (optionalUser.isEmpty()) return false;
 
 	    User user = optionalUser.get();
@@ -153,14 +153,14 @@ public class AuthServiceImpl implements AuthService {
 	    user.setPassword(passwordEncoder.encode(newPassword));
 	    user.setLastPasswordChange(LocalDateTime.now());
 	    if (user.getAccountStatus() == AccountStatus.BLOQUEADA) {
-	        user.setAccountStatus(AccountStatus.ACTIVADA);
+	        user.setAccountStatus(AccountStatus.ACTIVA);
 	        log.info("Cuenta desbloqueada automáticamente para usuario: {}", user.getUsername());
 	    }
 	    user.setFailedAttempts(0);
 	    user.setRecoveryToken(null);
 	    user.setRecoveryTokenExpiration(null);
 	    userService.saveForUserType(user);
-	    log.info("Contraseña restablecida y cuenta reactivada para usuario: {}", user.getUsername());
+	    log.info("Contraseña restablecida y cuenta reACTIVA para usuario: {}", user.getUsername());
 	    return true;
 	}
 
@@ -183,7 +183,7 @@ public class AuthServiceImpl implements AuthService {
 	public void requestPasswordRecovery(String email) {
 	    String token = UUID.randomUUID().toString();
 	    LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
-	    Optional<User> optionalUser = userAccountService.findByEmailForRecovery(email);
+	    Optional<User> optionalUser = userServiceAccount.findByEmailForRecovery(email);
 	    if (optionalUser.isEmpty()) {
 	        throw new UserNotFoundException("No se encontró ningún usuario con ese correo.");
 	    }

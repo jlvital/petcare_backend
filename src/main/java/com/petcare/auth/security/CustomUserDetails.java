@@ -9,10 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.petcare.enums.Role;
 import com.petcare.model.user.User;
+import com.petcare.utils.RoleChecker;
 
 import lombok.Getter;
-@Getter
 
+@Getter
 public class CustomUserDetails implements UserDetails {
 
 	private static final long serialVersionUID = 1L;
@@ -51,5 +52,18 @@ public class CustomUserDetails implements UserDetails {
 
     public Role getRole() {
         return user.getRole();
+    }
+
+    // Métodos delegados con RoleChecker
+    public boolean isAdmin() {
+        return RoleChecker.isAdmin(user);
+    }
+
+    public boolean isClient() {
+        return RoleChecker.isClient(user);
+    }
+
+    public boolean isEmployee() {
+        return RoleChecker.isEmployee(user);
     }
 }

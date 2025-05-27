@@ -16,8 +16,8 @@ public class Employee extends User {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "perfil", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(name = "perfil", nullable = false)
     private Profile profile;
 
     @Column(name = "fecha_alta", nullable = false, updatable = false)
@@ -25,7 +25,4 @@ public class Employee extends User {
 
     @Column(name = "fecha_fin")
     private LocalDate endDate;
-
-    @Column(name = "telefono")
-    private String phoneNumber;
 }

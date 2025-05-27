@@ -15,4 +15,3 @@ public class AppointmentStatusRequest {
 	@NotNull(message = "El nuevo estado de la cita es obligatorio")
     private AppointmentStatus newStatus;
 }
-

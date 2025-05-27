@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 import com.petcare.enums.Role;
 import com.petcare.exceptions.UserAlreadyExistsException;
 import com.petcare.model.client.dto.ClientRegistrationRequest;
+import com.petcare.model.client.dto.ClientUpdateRequest;
 import com.petcare.model.pet.Pet;
 import com.petcare.model.pet.PetRepository;
 import com.petcare.model.user.UserRepository;
+import com.petcare.validations.ClientValidator;
+import com.petcare.validations.UserValidator;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -38,16 +41,47 @@ public class ClientServiceImpl implements ClientService {
             throw new UserAlreadyExistsException("Ya existe un usuario con email: " + request.getUsername());
         }
 
+        ClientValidator.validateRegistrationRequest(request, userRepository);
+        
         Client client = new Client();
         client.setName(request.getName());
         client.setUsername(request.getUsername());
         client.setPassword(passwordEncoder.encode(request.getPassword()));
         client.setRole(Role.CLIENTE);
-        client.setRecoveryEmail(client.getUsername());
-
-        Client saved = userRepository.save(client); // sigue funcionando por ser subclase de User
+        client.setRecoveryEmail(request.getRecoveryEmail());
+        
+        UserValidator.validateUsernameAndRecoveryEmail(client);
+        Client saved = userRepository.save(client);
         log.info("Cliente registrado correctamente con ID: {}", saved.getId());
         return saved;
+    }
+    @Override
+    @Transactional
+	public void updateClientProfile(Client client, ClientUpdateRequest request) {
+        if (client == null || client.getId() == null) {
+            log.warn("Intento de actualización con cliente nulo o sin ID.");
+            throw new IllegalArgumentException("Cliente inválido para actualizar perfil.");
+        }
+
+        if (request == null) {
+            log.warn("Datos de actualización nulos para el cliente ID {}", client.getId());
+            throw new IllegalArgumentException("Los datos de actualización no pueden ser nulos.");
+        }
+
+        client.setName(request.getName());
+        client.setLastName1(request.getLastName1());
+        client.setLastName2(request.getLastName2());
+        client.setRecoveryEmail(request.getRecoveryEmail());
+        client.setPhoneNumber(request.getPhoneNumber());
+        client.setAddress(request.getAddress());
+        client.setGender(request.getGender());
+        client.setBirthDate(request.getBirthDate());
+        client.setProfilePictureUrl(request.getProfilePictureUrl());
+        client.setNotificationStatus(request.getNotificationStatus());
+
+        userRepository.save(client);
+
+        log.info("Perfil del cliente con ID {} actualizado correctamente.", client.getId());
     }
 
     @Override

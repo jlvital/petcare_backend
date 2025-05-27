@@ -20,4 +20,3 @@ public class UserResponse {
     private AccountStatus accountStatus;
     private Role role;
 }
-

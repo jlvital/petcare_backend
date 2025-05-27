@@ -1,11 +1,13 @@
 package com.petcare.model.user;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.petcare.config.Auditable;
 import com.petcare.enums.AccountStatus;
 import com.petcare.enums.Role;
+import com.petcare.enums.UserGender;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -34,14 +36,27 @@ public class User extends Auditable implements Serializable {
     @Column(name = "apellido_2")
     private String lastName2;
 
+    @Email(message = "Formato de correo inválido")
+    @Column(name = "email", nullable = false)
+    private String recoveryEmail;
+
+    @Column(name = "telefono")
+    private String phoneNumber;
+
+    @Column(name = "direccion")
+    private String address;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sexo")
+    private UserGender gender;
+
+    @Column(name = "fecha_nacimiento")
+    private LocalDate birthDate;
+
     @Column(name = "usuario", unique = true, nullable = false)
     @NotBlank(message = "Debes indicar un email válido como nombre de usuario")
     @Email(message = "Formato de email no válido")
     private String username;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false)
-    private AccountStatus accountStatus = AccountStatus.ACTIVADA;
 
     @Column(name = "password", nullable = false)
     @NotBlank(message = "La contraseña es obligatoria")
@@ -49,14 +64,14 @@ public class User extends Auditable implements Serializable {
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*[!@#$%^&*]).+$", message = "Debe incluir al menos una mayúscula y un carácter especial")
     private String password;
 
-    @Column(name = "email", nullable = false)
-    @Email(message = "Formato de correo inválido")
-    private String recoveryEmail;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false)
     @NotNull(message = "El rol es obligatorio")
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false)
+    private AccountStatus accountStatus = AccountStatus.ACTIVA;
 
     @Column(name = "ultimo_acceso", nullable = false, updatable = false)
     private LocalDateTime lastAccess = LocalDateTime.now();

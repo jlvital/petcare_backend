@@ -1,8 +1,8 @@
 package com.petcare.utils;
 
 /**
- * Clase de constantes globales del sistema PetCare360º. 
- * Agrupa valores fijos utilizados en módulos como correo, seguridad, URLs, usuarios, etc.
+ * Clase de constantes globales del sistema PetCare360º.
+ * Agrupa valores fijos utilizados en módulos como seguridad, URLs, usuarios, etc.
  */
 
 public class Constants {
@@ -20,12 +20,6 @@ public class Constants {
     // ╚════════════════════════════════════════╝
     public static final String MAIL_DOMAIN = "@petcare.com";
     public static final String EMAIL_FROM_ADDRESS = "notificaciones.petcare@gmail.com";
-
-    // Asuntos de correos
-    public static final String SUBJECT_WELCOME_CLIENT = "¡Bienvenido a PetCare!";
-    public static final String SUBJECT_WELCOME_EMPLOYEE = "Bienvenido a PetCare 🐾";
-    public static final String SUBJECT_PASSWORD_RECOVERY = "Recupera tu contraseña 🔒";
-    public static final String SUBJECT_ACCOUNT_DEACTIVATED = "Cuenta desactivada por inactividad";
 
     // ╔════════════════════════════════════════╗
     // ║ 		   SEGURIDAD / TOKENS           ║
