@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.petcare.admin.dto.BookingStatsResponse;
 import com.petcare.config.SystemAdmin;
 import com.petcare.model.employee.Employee;
-import com.petcare.model.employee.dto.EmployeeRegistrationRequest;
+import com.petcare.model.employee.dto.EmployeeRegisterRequest;
 import com.petcare.model.employee.dto.EmployeeResponse;
 import com.petcare.model.user.dto.UserResponseMapper;
 import com.petcare.utils.dto.ErrorResponse;
@@ -29,7 +29,7 @@ public class AdminController {
     private final SystemAdmin systemAdmin;
 
     // ╔══════════════════════════════════════════════════════════════╗
-    // ║                    ACCESO AL DASHBOARD ADMIN                ║
+    // ║                    ACCESO AL DASHBOARD ADMIN                 ║
     // ╚══════════════════════════════════════════════════════════════╝
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('ADMIN')")
@@ -39,7 +39,7 @@ public class AdminController {
     }
 
     // ╔══════════════════════════════════════════════════════════════╗
-    // ║                RECUPERACIÓN DE CONTRASEÑA ADMIN             ║
+    // ║                RECUPERACIÓN DE CONTRASEÑA ADMIN              ║
     // ╚══════════════════════════════════════════════════════════════╝
     @PostMapping("/recover-password")
     @PreAuthorize("hasRole('ADMIN')")
@@ -47,7 +47,7 @@ public class AdminController {
         log.info("Solicitud de recuperación de contraseña para correo: {}", email);
 
         if (!systemAdmin.isAdmin(email)) {
-            log.warn("❌ Acceso denegado. El correo proporcionado no es válido como administrador: {}", email);
+            log.warn("Acceso denegado. El correo proporcionado no es válido como administrador: {}", email);
             return buildErrorResponse("Correo inválido.", HttpStatus.BAD_REQUEST, request);
         }
 
@@ -57,11 +57,11 @@ public class AdminController {
     }
 
     // ╔══════════════════════════════════════════════════════════════╗
-    // ║                REGISTRO DE NUEVO EMPLEADO                   ║
+    // ║                REGISTRO DE NUEVO EMPLEADO                    ║
     // ╚══════════════════════════════════════════════════════════════╝
     @PostMapping("/register-employee")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EmployeeResponse> registerEmployee(@RequestBody EmployeeRegistrationRequest request) {
+    public ResponseEntity<EmployeeResponse> registerEmployee(@RequestBody EmployeeRegisterRequest request) {
         log.info("Registro solicitado para nuevo empleado: {} {} <{}>",
             request.getName(),
             request.getLastName1(),
@@ -86,7 +86,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BookingStatsResponse> getStats() {
         log.info("Solicitando estadísticas del panel de administración...");
-        BookingStatsResponse stats = adminService.getDashboardStats();
+        BookingStatsResponse stats = adminService.getBookingStats();
         return ResponseEntity.ok(stats);
     }
 

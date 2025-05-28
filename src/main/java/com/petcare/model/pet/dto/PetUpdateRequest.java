@@ -9,13 +9,10 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class PetResponse {
+public class PetUpdateRequest {
 
-    private Long id;
     private String name;
     private PetGender petGender;
-    private String chipNumber;
     private Integer age;
     private String breed;
     private LocalDate birthDate;

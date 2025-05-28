@@ -30,7 +30,7 @@ public class Pet extends Auditable {
     @Column(name = "sexo", nullable = false)
     private PetGender petGender;
 
-    @Column(name = "numero_chip")
+    @Column(name = "numero_chip", unique = true)
     private String chipNumber;
 
     @Column(name = "edad")

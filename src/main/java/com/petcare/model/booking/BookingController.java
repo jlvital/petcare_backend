@@ -72,10 +72,10 @@ public class BookingController {
         boolean updated = bookingService.updateStatus(bookingId, BookingStatus.CANCELADA, client.getId());
 
         if (updated) {
-            log.info("❌ Cliente ID {} ha cancelado la cita ID {}.", client.getId(), bookingId);
+            log.info("Cliente ID {} ha cancelado la cita ID {}.", client.getId(), bookingId);
             return ResponseEntity.ok("Cita cancelada correctamente.");
         } else {
-            log.warn("⚠️ Fallo al cancelar la cita ID {} por cliente ID {}", bookingId, client.getId());
+            log.warn("Fallo al cancelar la cita ID {} por cliente ID {}", bookingId, client.getId());
             return ResponseEntity.badRequest().body("No se pudo cancelar la cita.");
         }
     }
@@ -110,10 +110,10 @@ public class BookingController {
         boolean updated = bookingService.updateStatus(bookingId, BookingStatus.ANULADA);
 
         if (updated) {
-            log.info("🚫 Empleado ID {} anuló la cita ID {}.", employee.getId(), bookingId);
+            log.info("Empleado ID {} anuló la cita ID {}.", employee.getId(), bookingId);
             return ResponseEntity.ok("Cita anulada correctamente.");
         } else {
-            log.warn("⚠️ No se pudo anular la cita ID {} por parte del empleado ID {}", bookingId, employee.getId());
+            log.warn("No se pudo anular la cita ID {} por parte del empleado ID {}", bookingId, employee.getId());
             return ResponseEntity.badRequest().body("No se pudo anular la cita.");
         }
     }
@@ -130,10 +130,10 @@ public class BookingController {
         boolean updated = bookingService.updateStatus(bookingId, BookingStatus.COMPLETADA);
 
         if (updated) {
-            log.info("✅ Empleado ID {} marcó como COMPLETADA la cita ID {}.", employee.getId(), bookingId);
+            log.info("Empleado ID {} marcó como COMPLETADA la cita ID {}.", employee.getId(), bookingId);
             return ResponseEntity.ok("Cita marcada como completada.");
         } else {
-            log.warn("⚠️ No se pudo marcar como completada la cita ID {} por parte del empleado ID {}", bookingId, employee.getId());
+            log.warn("No se pudo marcar como completada la cita ID {} por parte del empleado ID {}", bookingId, employee.getId());
             return ResponseEntity.badRequest().body("No se pudo completar la cita.");
         }
     }

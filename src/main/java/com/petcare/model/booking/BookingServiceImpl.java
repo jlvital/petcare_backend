@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.petcare.email.EmailBookingService;
 import com.petcare.enums.BookingStatus;
+import com.petcare.exceptions.BookingException;
 import com.petcare.model.booking.dto.BookingRequest;
 import com.petcare.model.booking.dto.BookingResponse;
 import com.petcare.model.booking.dto.BookingUpdateRequest;
@@ -41,22 +42,22 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse createBooking(BookingRequest request, Client client) {
         ClientValidator.validateAuthenticatedClient(client);
 
-        Pet pet = petRepository.findById(request.getPetId())
-                .orElseThrow(() -> {
-                    log.warn("No se encontró mascota con ID: {}", request.getPetId());
-                    return new IllegalArgumentException("Mascota no encontrada.");
-                });
-
-        if (!pet.getClient().getId().equals(client.getId())) {
-            log.warn("Mascota ID {} no pertenece al cliente ID {}", pet.getId(), client.getId());
-            throw new IllegalArgumentException("No puedes agendar una cita para una mascota que no te pertenece.");
+        Pet pet = petRepository.findById(request.getPetId()).orElse(null);
+        if (pet == null) {
+            log.warn("No se encontró mascota con ID: {}", request.getPetId());
+            throw new BookingException("La mascota seleccionada no existe. Verifica los datos e inténtalo de nuevo.");
         }
 
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> {
-                    log.warn("Profesional no encontrado con ID: {}", request.getEmployeeId());
-                    return new IllegalArgumentException("El profesional indicado no existe.");
-                });
+        if (pet.getClient() == null || !pet.getClient().getId().equals(client.getId())) {
+            log.warn("Mascota ID {} no pertenece al cliente ID {}", pet.getId(), client.getId());
+            throw new BookingException("No puedes agendar una cita para una mascota que no está asociada a tu perfil.");
+        }
+
+        Employee employee = employeeRepository.findById(request.getEmployeeId()).orElse(null);
+        if (employee == null) {
+            log.warn("Profesional no encontrado con ID: {}", request.getEmployeeId());
+            throw new BookingException("El profesional indicado no está disponible. Elige otro profesional.");
+        }
 
         EmployeeValidator.validateEmployee(request.getType(), employee);
         BookingValidator.validateAvailability(bookingRepository, employee.getId(), request.getDate(), request.getTime());
@@ -74,17 +75,18 @@ public class BookingServiceImpl implements BookingService {
         booking.setReminderSent(false);
 
         Booking saved = bookingRepository.save(booking);
-        emailBookingService.sendBookingAssigned(
-        	    employee.getUsername(),                          // correo corporativo del empleado
-        	    client.getName(),                                // nombre del cliente
-        	    pet.getName(),                                   // nombre de la mascota
-        	    request.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-        	    request.getTime().format(DateTimeFormatter.ofPattern("HH:mm")),
-        	    request.getType().name()                         // tipo de cita
-        	);
 
-        log.info("✅ Cita creada y confirmada: ID {} | Mascota ID {} | Cliente ID {}",
-                saved.getId(), pet.getId(), client.getId());
+        emailBookingService.sendBookingAssigned(
+            employee.getUsername(),
+            client.getName(),
+            pet.getName(),
+            request.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+            request.getTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+            request.getType().name()
+        );
+
+        log.info("Cita creada y confirmada: ID {} | Mascota ID {} | Cliente ID {}",
+                 saved.getId(), pet.getId(), client.getId());
 
         return toResponse(saved);
     }
@@ -92,27 +94,27 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse updateBooking(Long bookingId, Long clientId, BookingUpdateRequest request) {
         if (bookingId == null || bookingId <= 0 || clientId == null || clientId <= 0) {
-            log.warn("❌ Parámetros inválidos para actualizar cita. Booking ID: {}, Cliente ID: {}", bookingId, clientId);
-            throw new IllegalArgumentException("Datos inválidos para actualizar la cita.");
+            log.warn("Parámetros inválidos para actualizar cita. Booking ID: {}, Cliente ID: {}", bookingId, clientId);
+            throw new BookingException("Datos inválidos para actualizar la cita.");
         }
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> {
-                    log.warn("❌ No se encontró la cita con ID: {}", bookingId);
-                    return new IllegalArgumentException("La cita no existe.");
+                    log.warn("No se encontró la cita con ID: {}", bookingId);
+                    return new BookingException("La cita no existe.");
                 });
 
         if (booking.getPet().getClient() == null || !booking.getPet().getClient().getId().equals(clientId)) {
-            log.warn("❌ Cliente ID {} intentó modificar una cita ajena (pertenece a: {}).",
+            log.warn("Cliente ID {} intentó modificar una cita ajena (pertenece a: {}).",
                     clientId,
                     booking.getPet().getClient() != null ? booking.getPet().getClient().getId() : "Desconocido");
-            throw new IllegalArgumentException("No tienes permiso para modificar esta cita.");
+            throw new BookingException("No tienes permiso para modificar esta cita.");
         }
 
         Employee newEmployee = employeeRepository.findById(request.getNewEmployeeId())
                 .orElseThrow(() -> {
-                    log.warn("❌ Profesional no encontrado con ID: {}", request.getNewEmployeeId());
-                    return new IllegalArgumentException("El profesional indicado no existe.");
+                    log.warn("Profesional no encontrado con ID: {}", request.getNewEmployeeId());
+                    return new BookingException("El profesional indicado no existe.");
                 });
 
         EmployeeValidator.validateEmployee(request.getNewType(), newEmployee);
@@ -128,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setReminderSent(false);
 
         Booking updated = bookingRepository.save(booking);
-        log.info("🔄 Cita ID {} actualizada correctamente por cliente ID {}", bookingId, clientId);
+        log.info("Cita ID {} actualizada correctamente por cliente ID {}", bookingId, clientId);
         return toResponse(updated);
     }
 
@@ -187,20 +189,20 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public boolean updateStatus(Long bookingId, BookingStatus newStatus) {
         if (bookingId == null || bookingId <= 0) {
-            log.warn("❌ ID de cita inválido: {}", bookingId);
+            log.warn("ID de cita inválido: {}", bookingId);
             return false;
         }
 
         Optional<Booking> optional = bookingRepository.findById(bookingId);
         if (optional.isEmpty()) {
-            log.warn("❌ No se encontró la cita con ID: {}", bookingId);
+            log.warn("No se encontró la cita con ID: {}", bookingId);
             return false;
         }
 
         Booking booking = optional.get();
         booking.setStatus(newStatus);
         bookingRepository.save(booking);
-        log.info("✅ Estado actualizado a [{}] para la cita ID {}", newStatus, bookingId);
+        log.info("Estado actualizado a [{}] para la cita ID {}", newStatus, bookingId);
         return true;
     }
 
@@ -208,13 +210,13 @@ public class BookingServiceImpl implements BookingService {
     public boolean updateStatus(Long bookingId, BookingStatus newStatus, Long clientId) {
         Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
         if (bookingOpt.isEmpty()) {
-            log.warn("❌ No se encontró la cita con ID: {}", bookingId);
+            log.warn("No se encontró la cita con ID: {}", bookingId);
             return false;
         }
 
         Booking booking = bookingOpt.get();
         if (booking.getPet().getClient() == null || !booking.getPet().getClient().getId().equals(clientId)) {
-            log.warn("❌ Cliente ID {} intentó actualizar estado de una cita que no le pertenece (dueño: {}).",
+            log.warn("Cliente ID {} intentó actualizar estado de una cita que no le pertenece (dueño: {}).",
                     clientId,
                     booking.getPet().getClient() != null ? booking.getPet().getClient().getId() : "N/A");
             return false;
@@ -222,12 +224,12 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setStatus(newStatus);
         bookingRepository.save(booking);
-        log.info("✅ Cliente ID {} actualizó el estado de la cita ID {} a [{}]", clientId, bookingId, newStatus);
+        log.info("Cliente ID {} actualizó el estado de la cita ID {} a [{}]", clientId, bookingId, newStatus);
         return true;
     }
 
     private BookingResponse toResponse(Booking booking) {
-        return BookingResponse.builder()
+        BookingResponse response = BookingResponse.builder()
             .id(booking.getId())
             .date(booking.getDate())
             .time(booking.getTime())
@@ -235,6 +237,13 @@ public class BookingServiceImpl implements BookingService {
             .type(booking.getType())
             .petName(booking.getPet() != null ? booking.getPet().getName() : "Desconocido")
             .employeeName(booking.getEmployee() != null ? booking.getEmployee().getName() : "Sin asignar")
+            .petId(booking.getPet() != null ? booking.getPet().getId() : null)
+            .employeeId(booking.getEmployee() != null ? booking.getEmployee().getId() : null)
+            .durationMinutes(30)
+            .employeeProfile(booking.getEmployee() != null && booking.getEmployee().getProfile() != null
+                             ? booking.getEmployee().getProfile().name() : "N/A")
             .build();
+        return response;
     }
+
 }

@@ -126,7 +126,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		log.info("Perfil del empleado con ID {} actualizado correctamente.", employee.getId());
 	}
 
-	// ✅ Lógica centralizada para construir el username
+	// Lógica centralizada para construir el username
 	private String generateCorporateUsername(String name, String lastName1, String lastName2) {
 		String n = name != null ? name.trim().toLowerCase().replace(" ", "") : "";
 		String l1 = lastName1 != null ? lastName1.trim().toLowerCase().replace(" ", "") : "";

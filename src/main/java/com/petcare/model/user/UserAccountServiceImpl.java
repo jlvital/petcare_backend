@@ -93,7 +93,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setLastPasswordChange(LocalDateTime.now());
-        user.setFailedAttempts(0);
+        user.setFailedLoginAttempts(0);
 
         if (user.getAccountStatus() == AccountStatus.BLOQUEADA) {
             user.setAccountStatus(AccountStatus.ACTIVA);

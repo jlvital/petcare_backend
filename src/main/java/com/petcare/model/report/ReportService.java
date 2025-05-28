@@ -1,5 +1,8 @@
 package com.petcare.model.report;
 
-public interface ReportService {
+import com.petcare.model.report.dto.ReportResponse;
+import java.util.List;
 
+public interface ReportService {
+    List<ReportResponse> getReportsByPet(Long petId, Long clientId);
 }

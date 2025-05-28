@@ -32,6 +32,11 @@ public interface EmailService {
     void sendAccountDeactivationEmail(String recipientEmail, String displayName, String token);
 
     /**
+     * Enviar email cuando una cuenta ha sido bloqueada por seguridad.
+     */
+    void sendAccountBlockedEmail(String recipientEmail, String displayName, String recoveryLink);
+    
+    /**
      * Enviar cualquier email HTML ya renderizado.
      */
     void sendHtmlEmail(String to, String subject, String htmlBody);

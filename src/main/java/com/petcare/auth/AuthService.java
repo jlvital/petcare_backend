@@ -2,11 +2,11 @@ package com.petcare.auth;
 
 import com.petcare.auth.dto.LoginRequest;
 import com.petcare.auth.dto.AuthResponse;
-import com.petcare.model.client.dto.ClientRegistrationRequest;
+import com.petcare.model.client.dto.ClientRegisterRequest;
 
 public interface AuthService {
 
-	AuthResponse register(ClientRegistrationRequest request);
+	AuthResponse register(ClientRegisterRequest request);
 
 	AuthResponse login(LoginRequest request);
 

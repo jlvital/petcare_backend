@@ -5,7 +5,7 @@ import java.util.List;
 import com.petcare.admin.dto.BookingStatsResponse;
 import com.petcare.model.client.Client;
 import com.petcare.model.employee.Employee;
-import com.petcare.model.employee.dto.EmployeeRegistrationRequest;
+import com.petcare.model.employee.dto.EmployeeRegisterRequest;
 import com.petcare.model.user.User;
 
 public interface AdminService {
@@ -22,7 +22,7 @@ public interface AdminService {
 
 	Client findClientById(Long id);
 
-	Employee registerNewEmployee(EmployeeRegistrationRequest request);
+	Employee registerNewEmployee(EmployeeRegisterRequest request);
 
 	List<Employee> listEmployees();
 
@@ -34,5 +34,5 @@ public interface AdminService {
 
 	void updateStock(Long productId, int quantity);
 
-	BookingStatsResponse getDashboardStats();
+	BookingStatsResponse getBookingStats();
 }

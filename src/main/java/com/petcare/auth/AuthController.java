@@ -2,7 +2,7 @@ package com.petcare.auth;
 
 import com.petcare.auth.dto.*;
 import com.petcare.exceptions.UserNotFoundException;
-import com.petcare.model.client.dto.ClientRegistrationRequest;
+import com.petcare.model.client.dto.ClientRegisterRequest;
 import com.petcare.utils.dto.ErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +32,7 @@ public class AuthController {
     // ╚══════════════════════════════════════════════════════════════╝
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody ClientRegistrationRequest request) {
+    public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody ClientRegisterRequest request) {
         log.info("Registro solicitado para nuevo cliente con correo: {}", request.getUsername());
         AuthResponse response = authService.register(request);
         log.info("Cliente registrado exitosamente: {}", request.getUsername());

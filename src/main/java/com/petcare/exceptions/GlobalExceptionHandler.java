@@ -14,8 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
 @Slf4j
-
 public class GlobalExceptionHandler {
+
+    // ╔════════════════════════════════════════════════════╗
+    // ║                EXCEPCIONES DE USUARIO              ║
+    // ╚════════════════════════════════════════════════════╝
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex, HttpServletRequest request) {
@@ -27,13 +30,17 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request, "USER_ALREADY_EXISTS");
     }
 
+    // ╔════════════════════════════════════════════════════╗
+    // ║           EXCEPCIONES DE AUTENTICACIÓN             ║
+    // ╚════════════════════════════════════════════════════╝
+
     @ExceptionHandler(IncorrectPasswordException.class)
     public ResponseEntity<ErrorResponse> handleIncorrectPassword(IncorrectPasswordException ex, HttpServletRequest request) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, request, "INCORRECT_PASSWORD");
     }
 
     @ExceptionHandler(PasswordMismatchException.class)
-    public ResponseEntity<ErrorResponse> handlePasswordMismatchException(PasswordMismatchException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handlePasswordMismatch(PasswordMismatchException ex, HttpServletRequest request) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "PASSWORD_MISMATCH");
     }
 
@@ -42,18 +49,39 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, request, "INVALID_TOKEN");
     }
 
+    // ╔════════════════════════════════════════════════════╗
+    // ║         EXCEPCIONES FUNCIONALES DEL SISTEMA        ║
+    // ╚════════════════════════════════════════════════════╝
+
+    @ExceptionHandler(BookingException.class)
+    public ResponseEntity<ErrorResponse> handleBookingException(BookingException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "BOOKING_ERROR");
+    }
+
+    @ExceptionHandler(AdminRecoveryEmailException.class)
+    public ResponseEntity<ErrorResponse> handleAdminRecoveryEmail(AdminRecoveryEmailException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request, "ADMIN_RECOVERY_EMAIL_NOT_CONFIGURED");
+    }
+
+    // ╔════════════════════════════════════════════════════╗
+    // ║       ERRORES GENERALES Y NO CONTROLADOS           ║
+    // ╚════════════════════════════════════════════════════╝
+
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
-        log.warn("IllegalArgumentException capturada: {}", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
+        log.warn("Parámetros no válidos en la solicitud: {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "ILLEGAL_ARGUMENT");
     }
-    
-    /* Cualquier otro error no controlado */
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception ex, HttpServletRequest request) {
         log.error("Excepción inesperada: {}", ex.getMessage(), ex);
         return buildErrorResponse("Ha ocurrido un error inesperado.", HttpStatus.INTERNAL_SERVER_ERROR, request, "INTERNAL_SERVER_ERROR");
     }
+
+    // ╔════════════════════════════════════════════════════╗
+    // ║     MÉTODO INTERNO PARA CONSTRUIR LA RESPUESTA     ║
+    // ╚════════════════════════════════════════════════════╝
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, HttpServletRequest request, String errorCode) {
         ErrorResponse error = new ErrorResponse();

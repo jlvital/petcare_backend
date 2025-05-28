@@ -16,7 +16,7 @@ import com.petcare.auth.dto.AuthResponse;
 import com.petcare.exceptions.IncorrectPasswordException;
 import com.petcare.exceptions.UserNotFoundException;
 import com.petcare.model.client.Client;
-import com.petcare.model.client.dto.ClientRegistrationRequest;
+import com.petcare.model.client.dto.ClientRegisterRequest;
 import com.petcare.model.client.ClientService;
 import com.petcare.model.user.User;
 import com.petcare.model.user.UserAccountService;
@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
 	private String adminPassword;
 
 	@Override
-	public AuthResponse register(ClientRegistrationRequest request) {
+	public AuthResponse register(ClientRegisterRequest request) {
 	    Client client = clientService.registerClient(request);
 	    String token = jwtUtil.generateTokenByUser(client);
 
@@ -73,24 +73,25 @@ public class AuthServiceImpl implements AuthService {
 	    }
 
 	    if (!password.equals(adminPassword) && !passwordEncoder.matches(password, user.getPassword())) {
-	        int attempts = user.getFailedAttempts() != null ? user.getFailedAttempts() : 0;
-	        user.setFailedAttempts(attempts + 1);
+	        int attempts = user.getFailedLoginAttempts() != null ? user.getFailedLoginAttempts() : 0;
+	        user.setFailedLoginAttempts(attempts + 1);
 
-	        if (user.getFailedAttempts() >= 3) {
+	        if (user.getFailedLoginAttempts() >= 3) {
 	            user.setAccountStatus(AccountStatus.BLOQUEADA);
 	            String token = UUID.randomUUID().toString();
 	            user.setRecoveryToken(token);
 	            user.setRecoveryTokenExpiration(LocalDateTime.now().plusHours(Constants.PASSWORD_RESET_EXPIRATION_HOURS));
 	            userService.saveForUserType(user);
 	            log.error("Cuenta bloqueada para usuario {}", username);
-	            emailService.sendPasswordRecoveryEmail(user.getRecoveryEmail(), token);
+	            String resetLink = Constants.buildRecoveryLink(token);
+	            emailService.sendAccountBlockedEmail(user.getRecoveryEmail(), user.getName(), resetLink);
 	        } else {
 	            userService.saveForUserType(user);
 	        }
 	        throw new IncorrectPasswordException();
 	    }
 
-	    user.setFailedAttempts(0);
+	    user.setFailedLoginAttempts(0);
 	    user.setLastAccess(LocalDateTime.now());
 	    userService.saveForUserType(user);
 
@@ -123,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
 	    user.setRecoveryTokenExpiration(null);
 	    user.setLastAccess(LocalDateTime.now());
 	    userService.saveForUserType(user);
-	    log.info("Cuenta reACTIVA correctamente para usuario: {}", user.getUsername());
+	    log.info("Cuenta reactivada correctamente para usuario: {}", user.getUsername());
 	    return true;
 	}
 
@@ -156,11 +157,11 @@ public class AuthServiceImpl implements AuthService {
 	        user.setAccountStatus(AccountStatus.ACTIVA);
 	        log.info("Cuenta desbloqueada automáticamente para usuario: {}", user.getUsername());
 	    }
-	    user.setFailedAttempts(0);
+	    user.setFailedLoginAttempts(0);
 	    user.setRecoveryToken(null);
 	    user.setRecoveryTokenExpiration(null);
 	    userService.saveForUserType(user);
-	    log.info("Contraseña restablecida y cuenta reACTIVA para usuario: {}", user.getUsername());
+	    log.info("Contraseña restablecida y cuenta reactivada para usuario: {}", user.getUsername());
 	    return true;
 	}
 

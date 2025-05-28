@@ -27,4 +27,9 @@ public class BookingResponse {
 
     private String clientName;
     private String petType;
+    
+    private Long petId;
+    private Long employeeId;
+    private Integer durationMinutes;
+    private String employeeProfile;
 }

@@ -80,7 +80,7 @@ public class User extends Auditable implements Serializable {
     private LocalDateTime lastPasswordChange = LocalDateTime.now();
 
     @Column(name = "errores")
-    private Integer failedAttempts = 0;
+    private Integer failedLoginAttempts = 0;
 
     @Column(name = "token")
     private String recoveryToken;

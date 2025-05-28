@@ -19,6 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 
+/**
+ * Esta clase inicializa el administrador del sistema al arrancar la aplicación.
+ * Si el admin ya está creado, no hace nada. Si no existe, lo crea con los datos de configuración.
+ */
+
 public class AdminStart {
 	
     private final SystemAdmin systemAdmin;

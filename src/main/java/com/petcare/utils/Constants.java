@@ -27,22 +27,23 @@ public class Constants {
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String TOKEN_HEADER = "Authorization";
 
-    // ╔════════════════════════════════════════╗
-    // ║ 			URLs DEL FRONTEND           ║
-    // ╚════════════════════════════════════════╝
-    public static final String FRONTEND_BASE_URL = "https://frontend-ten-puce-57.vercel.app/login";
-    public static final String LOGIN_URL = FRONTEND_BASE_URL + "/login";
-    public static final String PASSWORD_RECOVERY_URL = FRONTEND_BASE_URL + "/recover-password?token=";
-    public static final String ACCOUNT_REACTIVATION_URL = FRONTEND_BASE_URL + "/reactivate-account?token=";
+ // ╔════════════════════════════════════════╗
+ // ║        URLs DEL FRONTEND (Vercel)      ║
+ // ╚════════════════════════════════════════╝
+ public static final String FRONTEND_BASE_URL = "https://frontend-ten-puce-57.vercel.app";
 
-    // Métodos para construir enlaces dinámicos
-    public static String buildRecoveryLink(String token) {
-        return PASSWORD_RECOVERY_URL + token;
-    }
+ public static final String LOGIN_URL = FRONTEND_BASE_URL + "/login";
+ public static final String PASSWORD_RECOVERY_URL = FRONTEND_BASE_URL + "/recover-password?token=";
+ public static final String ACCOUNT_REACTIVATION_URL = FRONTEND_BASE_URL + "/reactivate-account?token=";
 
-    public static String buildReactivationLink(String token) {
-        return ACCOUNT_REACTIVATION_URL + token;
-    }
+ // Métodos para construir enlaces dinámicos
+ public static String buildRecoveryLink(String token) {
+     return PASSWORD_RECOVERY_URL + token;
+ }
+
+ public static String buildReactivationLink(String token) {
+     return ACCOUNT_REACTIVATION_URL + token;
+ }
 
     // ╔════════════════════════════════════════╗
     // ║ 	  	  CONFIGURACIÓN GENERAL        	║

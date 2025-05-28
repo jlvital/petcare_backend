@@ -57,7 +57,7 @@ public class EmailServiceImpl implements EmailService {
         sendWelcomeEmail(recipientEmail, role, displayName, null, ignoredPassword);
     }
 
-    // ✅ Nueva implementación añadida para resolver el error
+    // Nueva implementación añadida para resolver el error
     @Override
     public void sendWelcomeEmail(String recipientEmail, String role, String displayName, String username, String password, String resetLink) {
         EmailTemplate template;
@@ -94,6 +94,20 @@ public class EmailServiceImpl implements EmailService {
             sendHtmlEmail(recipientEmail, EmailTemplate.PASSWORD_RECOVERY.getSubject(), content);
         } catch (Exception e) {
             throw new RuntimeException("Error al enviar el email de recuperación de contraseña", e);
+        }
+    }
+
+    @Override
+    public void sendAccountBlockedEmail(String recipientEmail, String displayName, String recoveryLink) {
+        try {
+            Map<String, Object> variables = Map.of(
+                "name", displayName,
+                "recoveryLink", recoveryLink
+            );
+            String content = emailTemplate.render(EmailTemplate.ACCOUNT_BLOCKED, variables);
+            sendHtmlEmail(recipientEmail, EmailTemplate.ACCOUNT_BLOCKED.getSubject(), content);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al enviar el email de bloqueo de cuenta", e);
         }
     }
 

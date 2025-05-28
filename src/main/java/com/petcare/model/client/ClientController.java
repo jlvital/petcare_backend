@@ -47,7 +47,7 @@ public class ClientController {
 	}
 
 	// ╔══════════════════════════════════════════════════════════════╗
-	// ║ LISTADO DE MASCOTAS DEL CLIENTE ║
+	// ║ LISTADO DE MASCOTAS DEL CLIENTE 							  ║
 	// ╚══════════════════════════════════════════════════════════════╝
 	@GetMapping("/pets")
 	@PreAuthorize("hasRole('CLIENTE')")
@@ -66,7 +66,7 @@ public class ClientController {
 	}
 
 	// ╔══════════════════════════════════════════════════════════════╗
-	// ║ REGISTRO DE NUEVA MASCOTA ║
+	// ║ REGISTRO DE NUEVA MASCOTA									  ║
 	// ╚══════════════════════════════════════════════════════════════╝
 	@PostMapping("/pets")
 	@PreAuthorize("hasRole('CLIENTE')")

@@ -1,5 +1,9 @@
 package com.petcare.model.treatment;
 
-public interface TreatmentService {
+import com.petcare.model.treatment.dto.TreatmentResponse;
 
+import java.util.List;
+
+public interface TreatmentService {
+    List<TreatmentResponse> getTreatmentsByPet(Long petId, Long clientId);
 }

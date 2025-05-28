@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.petcare.enums.Role;
 import com.petcare.exceptions.UserAlreadyExistsException;
-import com.petcare.model.client.dto.ClientRegistrationRequest;
+import com.petcare.model.client.dto.ClientRegisterRequest;
 import com.petcare.model.client.dto.ClientUpdateRequest;
 import com.petcare.model.pet.Pet;
 import com.petcare.model.pet.PetRepository;
@@ -31,7 +31,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @Transactional
-    public Client registerClient(ClientRegistrationRequest request) {
+    public Client registerClient(ClientRegisterRequest request) {
         if (request == null || request.getUsername() == null) {
             throw new IllegalArgumentException("Debes indicar un nombre de usuario válido");
         }
