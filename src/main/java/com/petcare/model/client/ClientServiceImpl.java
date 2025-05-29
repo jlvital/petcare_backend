@@ -41,7 +41,7 @@ public class ClientServiceImpl implements ClientService {
             throw new UserAlreadyExistsException("Ya existe un usuario con email: " + request.getUsername());
         }
 
-        ClientValidator.validateRegistrationRequest(request, userRepository);
+        ClientValidator.validateRegisterRequest(request, userRepository);
         
         Client client = new Client();
         client.setName(request.getName());

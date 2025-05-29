@@ -12,21 +12,21 @@ import com.petcare.enums.BookingType;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findByPetId(Long petId);
+	List<Booking> findByPetId(Long petId);
 
-    List<Booking> findByEmployeeId(Long employeeId);
+	List<Booking> findByEmployeeId(Long employeeId);
 
-    List<Booking> findByStatus(BookingStatus status);
+	List<Booking> findByStatus(BookingStatus status);
 
-    boolean existsByEmployeeIdAndDateAndTime(Long employeeId, LocalDate date, LocalTime time);
+	boolean existsByEmployeeIdAndDateAndTime(Long employeeId, LocalDate date, LocalTime time);
 
-    List<Booking> findByDateBetween(LocalDateTime start, LocalDateTime end);
+	List<Booking> findByDateBetween(LocalDateTime start, LocalDateTime end);
 
-    List<Booking> findByType(BookingType type);
+	List<Booking> findByType(BookingType type);
 
-    long countByStatus(BookingStatus status);
+	long countByStatus(BookingStatus status);
 
-    List<Booking> findByDate(LocalDate date);
+	List<Booking> findByDate(LocalDate date);
 
-    List<Booking> findByEmployeeIdAndDate(Long employeeId, LocalDate date);
+	List<Booking> findByEmployeeIdAndDate(Long employeeId, LocalDate date);
 }

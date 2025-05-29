@@ -1,5 +1,3 @@
 package com.petcare.model.purchase;
 
-public interface DetailsService {
-
-}
+public interface DetailsService { }

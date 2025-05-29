@@ -1,4 +1,3 @@
-
 package com.petcare.email;
 
 /**
@@ -24,5 +23,4 @@ public interface EmailBookingService {
 
 	void sendBookingAssigned(String recipientEmail, String clientName, String petName, String date, String time,
 			String type);
-
 }

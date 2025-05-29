@@ -1,8 +1,8 @@
 package com.petcare.enums;
 
 public enum NotificationStatus {
-	ACTIVADAS, 
-	DESACTIVADAS;
+	
+	ACTIVADAS, DESACTIVADAS;
 	
 	public static final NotificationStatus DEFAULT = DESACTIVADAS;
 }

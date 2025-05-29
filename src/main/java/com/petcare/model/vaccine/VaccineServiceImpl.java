@@ -26,7 +26,7 @@ public class VaccineServiceImpl implements VaccineService {
                 new IllegalArgumentException("Mascota no encontrada con ID: " + petId));
 
         if (!pet.getClient().getId().equals(clientId)) {
-            log.warn("⛔ Cliente ID {} intentó acceder a vacunas de mascota ajena ID {}.", clientId, petId);
+            log.warn("Cliente ID {} intentó acceder a vacunas de mascota ajena ID {}.", clientId, petId);
             throw new IllegalArgumentException("No tienes permiso para ver las vacunas de esta mascota.");
         }
 
@@ -35,7 +35,7 @@ public class VaccineServiceImpl implements VaccineService {
             responses.add(VaccineResponse.fromEntity(vaccine));
         }
 
-        log.info("💉 Se encontraron {} vacunas para la mascota ID {} del cliente ID {}.", responses.size(), petId, clientId);
+        log.info("Se encontraron {} vacunas para la mascota ID {} del cliente ID {}.", responses.size(), petId, clientId);
         return responses;
     }
 }

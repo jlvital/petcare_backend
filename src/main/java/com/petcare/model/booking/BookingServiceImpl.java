@@ -62,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
         EmployeeValidator.validateEmployee(request.getType(), employee);
         BookingValidator.validateAvailability(bookingRepository, employee.getId(), request.getDate(), request.getTime());
         BookingValidator.validateDateAndTime(request.getDate(), request.getTime());
-        BookingValidator.validateReminderSettings(request.getReminderRequested(), client);
+        BookingValidator.validateReminderSettings(request.getReminderRequest(), client);
 
         Booking booking = new Booking();
         booking.setPet(pet);
@@ -71,7 +71,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setTime(request.getTime());
         booking.setType(request.getType());
         booking.setStatus(BookingStatus.CONFIRMADA);
-        booking.setReminderRequested(request.getReminderRequested());
+        booking.setReminderRequest(request.getReminderRequest());
         booking.setReminderSent(false);
 
         Booking saved = bookingRepository.save(booking);
@@ -120,13 +120,13 @@ public class BookingServiceImpl implements BookingService {
         EmployeeValidator.validateEmployee(request.getNewType(), newEmployee);
         BookingValidator.validateAvailability(bookingRepository, newEmployee.getId(), request.getNewDate(), request.getNewTime());
         BookingValidator.validateDateAndTime(request.getNewDate(), request.getNewTime());
-        BookingValidator.validateReminderSettings(request.getReminderRequested(), booking.getPet().getClient());
+        BookingValidator.validateReminderSettings(request.getReminderRequest(), booking.getPet().getClient());
 
         booking.setDate(request.getNewDate());
         booking.setTime(request.getNewTime());
         booking.setType(request.getNewType());
         booking.setEmployee(newEmployee);
-        booking.setReminderRequested(request.getReminderRequested());
+        booking.setReminderRequest(request.getReminderRequest());
         booking.setReminderSent(false);
 
         Booking updated = bookingRepository.save(booking);
@@ -245,5 +245,4 @@ public class BookingServiceImpl implements BookingService {
             .build();
         return response;
     }
-
 }

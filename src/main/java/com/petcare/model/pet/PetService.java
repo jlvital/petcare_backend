@@ -1,5 +1,3 @@
 package com.petcare.model.pet;
 
-public interface PetService {
-
-}
+public interface PetService { }

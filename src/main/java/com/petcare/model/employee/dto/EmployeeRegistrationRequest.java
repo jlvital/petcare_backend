@@ -11,15 +11,16 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeRegisterRequest {
+public class EmployeeRegistrationRequest {
 
     @NotBlank(message = "El nombre es obligatorio")
     private String name;
 
     private String lastName1;
+
     private String lastName2;
 
-    //@NotBlank(message = "El correo de contacto es obligatorio")
+    @NotBlank(message = "El correo de contacto es obligatorio")
     @Email(message = "Formato de correo de contacto inválido")
     private String recoveryEmail;
 

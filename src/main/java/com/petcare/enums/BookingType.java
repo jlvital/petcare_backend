@@ -1,8 +1,8 @@
 package com.petcare.enums;
 
 	public enum BookingType {
-		
-    ANALISIS(Profile.VETERINARIO),
+    
+	ANALISIS(Profile.VETERINARIO),
     CONSULTA(Profile.VETERINARIO),
     VACUNA(Profile.VETERINARIO),
     BAÑO(Profile.AUXILIAR),

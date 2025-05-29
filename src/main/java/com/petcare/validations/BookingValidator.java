@@ -54,8 +54,8 @@ public class BookingValidator {
     // ═══════════════════════════════════════════════════════════════
     // VALIDACIÓN: Recordatorios (solo email)
     // ═══════════════════════════════════════════════════════════════
-    public static void validateReminderSettings(Boolean reminderRequested, Client client) {
-        if (Boolean.TRUE.equals(reminderRequested)) {
+    public static void validateReminderSettings(Boolean reminderRequest, Client client) {
+        if (Boolean.TRUE.equals(reminderRequest)) {
             if (client == null || client.getRecoveryEmail() == null || client.getRecoveryEmail().trim().isEmpty()) {
                 log.warn("Recordatorio solicitado pero el cliente no tiene email de recuperación configurado.");
                 throw new IllegalArgumentException("Debes tener un correo registrado para recibir recordatorios.");

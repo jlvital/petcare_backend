@@ -1,5 +1,3 @@
 package com.petcare.model.purchase;
 
-public class PurchaseServiceImpl {
-
-}
+public class PurchaseServiceImpl { }

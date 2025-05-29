@@ -232,5 +232,4 @@ public class AdminServiceImpl implements AdminService {
 	    log.info("Estadísticas de citas generadas correctamente.");
 	    return stats;
 	}
-
 }

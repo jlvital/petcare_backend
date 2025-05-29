@@ -24,14 +24,9 @@ public class ClientUpdateRequest {
 
     @Pattern(regexp = "^\\d{9}$", message = "El teléfono debe tener 9 dígitos")
     private String phoneNumber;
-
     private String address;
-
     private String profilePictureUrl;
-
     private NotificationStatus notificationStatus;
-
     private LocalDate birthDate;
-
     private UserGender gender;
 }

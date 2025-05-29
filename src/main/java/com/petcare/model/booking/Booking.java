@@ -35,7 +35,10 @@ public class Booking extends Auditable {
     @NotNull(message = "Indica la hora de la cita")
     private LocalTime time;
 
-    @Column(name = "recordatorio_enviado", nullable = false)
+    @Column(name = "recordatorio", nullable = false)
+    private Boolean reminderRequest = false;
+    
+    @Column(name = "notificado", nullable = false)
     private Boolean reminderSent = false;
 
     @Column(name = "estado", nullable = false)
@@ -49,15 +52,12 @@ public class Booking extends Auditable {
     private BookingType type;
 
     @ManyToOne
-    @JoinColumn(name = "mascota_id", nullable = false)
-    @NotNull(message = "Selecciona la mascota para la que agendas la cita")
+    @JoinColumn(name = "id_mascota", nullable = false)
+    @NotNull(message = "Selecciona la mascota para la que quieres agendar la cita")
     private Pet pet;
 
     @ManyToOne
-    @JoinColumn(name = "empleado_id", nullable = false)
-    @NotNull(message = "Selecciona el nombre de uno de nuestros profesionales")
+    @JoinColumn(name = "id_empleado", nullable = false)
+    @NotNull(message = "Selecciona el nombre de uno de nuestros empleados")
     private Employee employee;
-
-    @Column(name = "solicita_recordatorio", nullable = false)
-    private Boolean reminderRequested = false;
 }

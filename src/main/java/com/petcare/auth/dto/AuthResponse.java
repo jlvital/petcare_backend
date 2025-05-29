@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Respuesta tras login o registro exitoso.
+ * Respuesta tras realizar login o registro con éxito en la aplicación.
  */
 @Getter
 @Setter
@@ -15,9 +15,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AuthResponse {
     
-    private String token;      // JWT generado
-    private Long id;           // ID del usuario autenticado
-    private String name;       // Nombre del usuario
-    private String username;   // Correo electrónico
-    private Role role;         // Enum de rol (ADMIN, CLIENTE, EMPLEADO)
+    private String token;      
+    private Long id;
+    private String name;
+    private String username;
+    private Role role;
 }

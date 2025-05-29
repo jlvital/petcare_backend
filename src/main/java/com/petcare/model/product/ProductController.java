@@ -1,5 +1,3 @@
 package com.petcare.model.product;
 
-public class ProductController {
-
-}
+public class ProductController { }

@@ -1,5 +1,3 @@
 package com.petcare.model.pet;
 
-public class PetServiceImpl {
-
-}
+public class PetServiceImpl { }

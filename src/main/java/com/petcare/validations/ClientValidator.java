@@ -51,7 +51,7 @@ public class ClientValidator {
         log.info("Cliente ID [{}] tiene teléfono registrado: {}", client.getId(), phone);*/
     }
         
-    public static void validateRegistrationRequest(ClientRegisterRequest request, UserRepository repository) {
+    public static void validateRegisterRequest(ClientRegisterRequest request, UserRepository repository) {
         if (request == null) {
             log.warn("Intento de validación con datos nulos.");
             throw new IllegalArgumentException("Los datos del cliente no pueden ser nulos.");

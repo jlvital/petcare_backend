@@ -23,7 +23,7 @@ public class ClientController {
 	private final ClientService clientService;
 
 	// ╔══════════════════════════════════════════════════════════════╗
-	// ║ PANEL DEL CLIENTE 											  ║
+	// ║ PANEL DEL CLIENTE ║
 	// ╚══════════════════════════════════════════════════════════════╝
 	@GetMapping("/dashboard")
 	@PreAuthorize("hasRole('CLIENTE')")
@@ -34,7 +34,7 @@ public class ClientController {
 	}
 
 	// ╔══════════════════════════════════════════════════════════════╗
-	// ║ ACTUALIZACIÓN DEL PERFIL									  ║
+	// ║ ACTUALIZACIÓN DEL PERFIL ║
 	// ╚══════════════════════════════════════════════════════════════╝
 	@PutMapping("/profile")
 	@PreAuthorize("hasRole('CLIENTE')")
@@ -47,7 +47,7 @@ public class ClientController {
 	}
 
 	// ╔══════════════════════════════════════════════════════════════╗
-	// ║ LISTADO DE MASCOTAS DEL CLIENTE 							  ║
+	// ║ LISTADO DE MASCOTAS DEL CLIENTE ║
 	// ╚══════════════════════════════════════════════════════════════╝
 	@GetMapping("/pets")
 	@PreAuthorize("hasRole('CLIENTE')")
@@ -66,7 +66,7 @@ public class ClientController {
 	}
 
 	// ╔══════════════════════════════════════════════════════════════╗
-	// ║ REGISTRO DE NUEVA MASCOTA									  ║
+	// ║ REGISTRO DE NUEVA MASCOTA ║
 	// ╚══════════════════════════════════════════════════════════════╝
 	@PostMapping("/pets")
 	@PreAuthorize("hasRole('CLIENTE')")

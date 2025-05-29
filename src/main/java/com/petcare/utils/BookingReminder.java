@@ -36,7 +36,7 @@ public class BookingReminder {
         List<Booking> bookings = bookingRepository.findByDate(targetDate);
 
         for (Booking booking : bookings) {
-            boolean debeRecordar = Boolean.TRUE.equals(booking.getReminderRequested());
+            boolean debeRecordar = Boolean.TRUE.equals(booking.getReminderRequest());
             boolean noEnviado = Boolean.FALSE.equals(booking.getReminderSent());
             boolean estaConfirmada = "CONFIRMADA".equals(booking.getStatus().name());
 

@@ -13,9 +13,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SummaryResponse {
 
-    private Long id;           // ID del usuario
-    private String name;       // Nombre completo
-    private String username;   // Correo electrónico
-    private Role role;         // Rol del usuario
-    private boolean active;    // Estado de cuenta (activo/inactivo)
+    private Long id;
+    private String name;
+    private String username;
+    private Role role;
+    private boolean active;
 }

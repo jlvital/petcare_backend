@@ -30,5 +30,5 @@ public class BookingRequest {
     private Long employeeId;
 
     @NotNull(message = "Debe indicar si desea recibir un recordatorio")
-    private Boolean reminderRequested;
+    private Boolean reminderRequest;
 }

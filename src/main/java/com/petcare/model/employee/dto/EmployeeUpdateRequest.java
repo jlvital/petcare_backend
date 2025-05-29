@@ -23,6 +23,5 @@ public class EmployeeUpdateRequest {
     private String phoneNumber;
 
     private String address;
-
     private UserGender gender;
 }
