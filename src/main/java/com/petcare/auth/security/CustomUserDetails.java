@@ -7,9 +7,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.petcare.domain.user.User;
 import com.petcare.enums.Role;
-import com.petcare.model.user.User;
-import com.petcare.utils.RoleChecker;
+import com.petcare.utils.RoleUtils;
 
 import lombok.Getter;
 
@@ -56,14 +56,14 @@ public class CustomUserDetails implements UserDetails {
 
     // Métodos delegados con RoleChecker
     public boolean isAdmin() {
-        return RoleChecker.isAdmin(user);
+        return RoleUtils.isAdmin(user);
     }
 
     public boolean isClient() {
-        return RoleChecker.isClient(user);
+        return RoleUtils.isClient(user);
     }
 
     public boolean isEmployee() {
-        return RoleChecker.isEmployee(user);
+        return RoleUtils.isEmployee(user);
     }
 }

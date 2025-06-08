@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.petcare.domain.user.User;
 import com.petcare.enums.Role;
-import com.petcare.model.user.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 
 public class JwtUtil {
-
+	
 	@Value("${jwt.expiration}")
 	private long expirationTime;
 
@@ -108,16 +108,17 @@ public class JwtUtil {
 		return generateToken(claims, username, expirationTime);
 	}
 
-	public String generateTokenByUser(User User) {
+	public String generateTokenByUser(User user) {
 		Map<String, Object> claims = new HashMap<>();
-		claims.put("email", User.getUsername());
+		claims.put("email", user.getUsername());
 
-		Role role = User.getRole();
+		Role role = user.getRole();
 		if (role != null) {
 			claims.put("role", role.name());
+			claims.put("name", user.getName());
 		}
 
-		return generateToken(claims, User.getUsername(), expirationTime);
+		return generateToken(claims, user.getUsername(), expirationTime);
 	}
 
 	public String generateTokenForPasswordReset(String email) {

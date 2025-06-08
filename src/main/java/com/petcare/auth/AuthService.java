@@ -1,22 +1,19 @@
 package com.petcare.auth;
 
 import com.petcare.auth.dto.LoginRequest;
-import com.petcare.auth.dto.AuthResponse;
-import com.petcare.model.client.dto.ClientRegisterRequest;
+import com.petcare.auth.dto.LoginResponse;
+import com.petcare.domain.client.dto.ClientRequest;
 
 public interface AuthService {
 
-	AuthResponse register(ClientRegisterRequest request);
+	LoginResponse register(ClientRequest request);
 
-	AuthResponse login(LoginRequest request);
+	LoginResponse login(LoginRequest request);
 
-	boolean changeAuthUserPassword(String username, String newPassword);
+	boolean changePassword(String username, String newPassword, String confirmPassword);
 
-	boolean resetPasswordWithToken(String token, String newPassword);
+	void sendRecoveryLink(String email);
 
-	void initiatePasswordRecovery(String email);
-
-	void requestPasswordRecovery(String email);
-
-	boolean reactivateAccount(String token);
-}
+	boolean recoverAccount(String token, String newPassword, String confirmPassword);
+	
+	}

@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recordatorio de cita - PetCare</title>
+    <style>
+        /* {{styles}} */
+    </style>
+</head>
+<body>
+    <div class="container reminder">
+        <p>Hola <span th:text="${clientName}">Usuario</span>,</p>
+
+        <p>Te recordamos que tienes una cita programada para tu mascota <strong th:text="${petName}">Nombre Mascota</strong>.</p>
+
+        <div class="details">
+            <p><strong>Fecha:</strong> <span th:text="${date}">01/01/2025</span></p>
+            <p><strong>Hora:</strong> <span th:text="${time}">10:00</span></p>
+            <p><strong>Ubicación:</strong> <span th:text="${location}">Clínica Central</span></p>
+        </div>
+
+        <p>Por favor, intenta llegar 10 minutos antes. Si necesitas reprogramar, contáctanos.</p>
+
+        <div class="footer">
+            <p>Gracias por confiar en <strong>PetCare</strong> 🐾</p>
+            <div class="footer-logo">
+                <img src="cid:petcare-logo" alt="PetCare" style="width: 120px;">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

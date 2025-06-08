@@ -1,143 +1,145 @@
 package com.petcare.auth;
 
 import com.petcare.auth.dto.*;
-import com.petcare.exceptions.UserNotFoundException;
-import com.petcare.model.client.dto.ClientRegisterRequest;
-import com.petcare.utils.dto.ErrorResponse;
+import com.petcare.domain.client.dto.ClientRequest;
+import com.petcare.exceptions.*;
+import com.petcare.utils.dto.MessageResponse;
+import static com.petcare.utils.constants.MessageConstants.*;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+/**
+ * Controlador REST responsable de la autenticación y gestión de contraseñas.
+ * <p>
+ * Expone endpoints públicos para:
+ * <ul>
+ * <li>Registrar nuevos clientes</li>
+ * <li>Iniciar sesión (login)</li>
+ * <li>Cambiar o recuperar la contraseña</li>
+ * <li>Reactivar cuentas bloqueadas o desactivadas</li>
+ * </ul>
+ * Estos endpoints permiten el acceso inicial al sistema, así como la
+ * recuperación de cuentas o credenciales en caso de olvido.
+ *
+ * @see AuthService
+ * @see com.petcare.auth.dto
+ */
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
 
-    private final AuthService authService;
+	private final AuthService authService;
 
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║                       REGISTRO Y LOGIN                       ║
-    // ╚══════════════════════════════════════════════════════════════╝
+	// ╔══════════════════════════════════════════════════════════════╗
+	// ║ REGISTRO Y LOGIN ║
+	// ╚══════════════════════════════════════════════════════════════╝
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody ClientRegisterRequest request) {
-        log.info("Registro solicitado para nuevo cliente con correo: {}", request.getUsername());
-        AuthResponse response = authService.register(request);
-        log.info("Cliente registrado exitosamente: {}", request.getUsername());
-        return ResponseEntity.ok(response);
-    }
+	/**
+	 * Registra un nuevo cliente en el sistema.
+	 * <p>
+	 * El cliente debe proporcionar su nombre, apellidos, correo electrónico y una
+	 * contraseña válida. Si el registro es exitoso, se genera un token JWT y se
+	 * envía un correo de bienvenida.
+	 *
+	 * @param request Objeto con los datos del nuevo cliente.
+	 * @return Respuesta con los datos del usuario y token de autenticación.
+	 */
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginRequest request) {
-        log.info("Petición de inicio de sesión para: {}", request.getUsername());
-        AuthResponse response = authService.login(request);
-        log.info("Inicio de sesión exitoso para: {}", request.getUsername());
-        return ResponseEntity.ok(response);
-    }
+	@PostMapping("/register")
+	public ResponseEntity<LoginResponse> registerUser(@Valid @RequestBody ClientRequest request) {
+		log.info("Registro solicitado para nuevo cliente: {}", request.getUsername());
+		LoginResponse response = authService.register(request);
+		log.info("Registro exitoso para cliente: {}", request.getUsername());
+		return ResponseEntity.ok(response);
+	}
 
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║                   CAMBIO DE CONTRASEÑA (autenticado)         ║
-    // ╚══════════════════════════════════════════════════════════════╝
+	/**
+	 * Inicia sesión en el sistema con las credenciales proporcionadas.
+	 * <p>
+	 * Si el usuario existe y la contraseña es correcta, se devuelve un token JWT
+	 * válido para sesiones autenticadas.
+	 *
+	 * @param request Objeto con el correo y la contraseña.
+	 * @return Respuesta con el token de acceso y los datos del usuario.
+	 */
 
-    @PostMapping("/change-password")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> changePassword(@RequestBody @Valid ChangePasswordRequest dto, HttpServletRequest request) {
-        log.info("Solicitud de cambio de contraseña para: {}", dto.getEmail());
+	@PostMapping("/login")
+	public ResponseEntity<LoginResponse> authenticateUser(@Valid @RequestBody LoginRequest request) {
+		log.info("Intento de login para: {}", request.getUsername());
+		LoginResponse response = authService.login(request);
+		log.info("Login exitoso para: {}", request.getUsername());
+		return ResponseEntity.ok(response);
+	}
 
-        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            log.warn("Fallo en cambio de contraseña: no coinciden los campos");
-            return buildErrorResponse("Las contraseñas no coinciden.", HttpStatus.BAD_REQUEST, request);
-        }
+	// ╔══════════════════════════════════════════════════════════════╗
+	// ║ GESTIÓN DE CONTRASEÑA ║
+	// ╚══════════════════════════════════════════════════════════════╝
 
-        boolean updated = authService.changeAuthUserPassword(dto.getEmail(), dto.getNewPassword());
-        if (updated) {
-            log.info("Contraseña actualizada correctamente para {}", dto.getEmail());
-            return ResponseEntity.ok("Contraseña actualizada correctamente.");
-        } else {
-            log.warn("No se pudo actualizar la contraseña para {}", dto.getEmail());
-            return buildErrorResponse("No se pudo actualizar la contraseña.", HttpStatus.BAD_REQUEST, request);
-        }
-    }
+	/**
+	 * Permite a un usuario autenticado cambiar su contraseña.
+	 * <p>
+	 * La nueva contraseña debe cumplir los requisitos mínimos y coincidir con su
+	 * confirmación. Esta operación requiere estar autenticado.
+	 *
+	 * @param dto Objeto con la nueva contraseña y su confirmación.
+	 * @return Mensaje indicando que el cambio se ha realizado correctamente.
+	 */
 
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║                  RECUPERACIÓN DE CONTRASEÑA                  ║
-    // ╚══════════════════════════════════════════════════════════════╝
+	@PostMapping("/change-password")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<MessageResponse> passwordChangeRequest(@RequestBody @Valid PasswordChangeRequest dto) {
+		String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.info("Solicitud de cambio de contraseña para: {}", userEmail);
+		authService.changePassword(userEmail, dto.getNewPassword(), dto.getConfirmPassword());
+		return ResponseEntity.ok(new MessageResponse(PASSWORD_RESET_SUCCESS));
+	}
 
-    @PostMapping("/request-password-recovery")
-    public ResponseEntity<?> requestPasswordRecovery(@RequestBody @Valid RecoveryEmailRequest requestDTO, HttpServletRequest request) {
-        log.info("Solicitud de recuperación de contraseña para: {}", requestDTO.getEmail());
+	/**
+	 * Solicita el envío de un enlace de recuperación de contraseña al correo
+	 * registrado.
+	 * <p>
+	 * El sistema genera un token temporal y lo envía por email para permitir al
+	 * usuario restablecer su contraseña.
+	 *
+	 * @param dto Objeto con el correo al que se enviará el enlace de recuperación.
+	 * @return Mensaje de confirmación del envío del enlace.
+	 */
 
-        try {
-            authService.requestPasswordRecovery(requestDTO.getEmail());
-            log.info("Enlace de recuperación enviado a {}", requestDTO.getEmail());
-            return ResponseEntity.ok("Hemos enviado un enlace para restablecer tu contraseña a tu correo electrónico.");
-        } catch (UserNotFoundException e) {
-            log.warn("Solicitud fallida: no existe cuenta con el correo {}", requestDTO.getEmail());
-            return buildErrorResponse("No se encontró ninguna cuenta con ese correo.", HttpStatus.BAD_REQUEST, request);
-        }
-    }
+	@PostMapping("/request-recovery")
+	public ResponseEntity<MessageResponse> sendRecoveryLink(@RequestBody @Valid PasswordRecoveryRequest dto) {
+		log.info("Solicitud de recuperación para: {}", dto.getEmail());
+		authService.sendRecoveryLink(dto.getEmail());
+		return ResponseEntity.ok(new MessageResponse(RECOVERY_EMAIL_SENT));
+	}
 
-    @PostMapping("/recovery-password")
-    public ResponseEntity<?> recoverPassword(@RequestBody @Valid PasswordResetRequest dto, HttpServletRequest request) {
-        log.info("Intentando restablecer contraseña con token: {}", dto.getToken());
+	// ╔══════════════════════════════════════════════════════════════╗
+	// ║ GESTIÓN DE CUENTAS ║
+	// ╚══════════════════════════════════════════════════════════════╝
 
-        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            log.warn("Restablecimiento fallido: las contraseñas no coinciden.");
-            return buildErrorResponse("Las contraseñas no coinciden.", HttpStatus.BAD_REQUEST, request);
-        }
-
-        boolean success = authService.resetPasswordWithToken(dto.getToken(), dto.getNewPassword());
-        if (success) {
-            log.info("Contraseña restablecida correctamente con token");
-            return ResponseEntity.ok("Contraseña restablecida correctamente.");
-        } else {
-            log.warn("Token inválido o expirado en intento de restablecimiento");
-            return buildErrorResponse("Token inválido o expirado.", HttpStatus.BAD_REQUEST, request);
-        }
-    }
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║                REACTIVACIÓN DE CUENTA INACTIVA              ║
-    // ╚══════════════════════════════════════════════════════════════╝
-
-    @GetMapping("/reactivate-account")
-    public ResponseEntity<?> reactivateAccount(@RequestParam String token, HttpServletRequest request) {
-        log.info("Intento de reactivación de cuenta con token: {}", token);
-
-        boolean success = authService.reactivateAccount(token);
-        if (success) {
-            log.info("Cuenta reactivada correctamente con token.");
-            return ResponseEntity.ok("Cuenta reactivada correctamente. Ya puedes iniciar sesión.");
-        } else {
-            log.warn("Token inválido o expirado para reactivación.");
-            return buildErrorResponse("Token inválido o expirado.", HttpStatus.BAD_REQUEST, request);
-        }
-    }
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║                      RESPUESTA DE ERRORES                    ║
-    // ╚══════════════════════════════════════════════════════════════╝
-
-    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, HttpServletRequest request) {
-        ErrorResponse error = new ErrorResponse();
-        error.setTimestamp(LocalDateTime.now());
-        error.setStatus(status.value());
-        error.setError(status.getReasonPhrase());
-        error.setMessage(message);
-        error.setPath(request.getRequestURI());
-        error.setErrorCode("ERR-" + status.value());
-        return new ResponseEntity<>(error, status);
-    }
+	/**
+	 * Restablece la contraseña y reactiva la cuenta.
+	 * <p>
+	 * Si el token es válido y no ha expirado, se actualiza la contraseña
+	 * y se reactiva automáticamente la cuenta, tanto si estaba bloqueada como desactivada.
+	 *
+	 * @param dto Datos del formulario con token y nueva contraseña.
+	 * @return Confirmación de operación exitosa.
+	 */
+	@PostMapping("/recover-account")
+	public ResponseEntity<MessageResponse> recoverAccount(@RequestBody @Valid PasswordResetRequest dto) {
+	    log.info("Recuperación de cuenta con token: {}", dto.getToken());
+	    authService.recoverAccount(dto.getToken(), dto.getNewPassword(), dto.getConfirmPassword());
+	    return ResponseEntity.ok(new MessageResponse(PASSWORD_RESET_SUCCESS));
+	}
 }

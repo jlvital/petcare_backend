@@ -1,89 +1,120 @@
 package com.petcare.exceptions;
 
-import java.time.LocalDateTime;
-
+import com.petcare.utils.constants.MessageConstants;
+import com.petcare.utils.dto.ErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.petcare.utils.dto.ErrorResponse;
-
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
     // ╔════════════════════════════════════════════════════╗
-    // ║                EXCEPCIONES DE USUARIO              ║
+    // ║ EXCEPCIONES PERSONALIZADAS DEL SISTEMA            ║
     // ╚════════════════════════════════════════════════════╝
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request, "USER_NOT_FOUND");
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request, "NOT_FOUND");
     }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request, "USER_ALREADY_EXISTS");
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyExists(AlreadyExistsException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request, "ALREADY_EXISTS");
     }
 
-    // ╔════════════════════════════════════════════════════╗
-    // ║           EXCEPCIONES DE AUTENTICACIÓN             ║
-    // ╚════════════════════════════════════════════════════╝
-
-    @ExceptionHandler(IncorrectPasswordException.class)
-    public ResponseEntity<ErrorResponse> handleIncorrectPassword(IncorrectPasswordException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, request, "INCORRECT_PASSWORD");
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, request, "AUTHENTICATION_ERROR");
     }
 
-    @ExceptionHandler(PasswordMismatchException.class)
-    public ResponseEntity<ErrorResponse> handlePasswordMismatch(PasswordMismatchException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "PASSWORD_MISMATCH");
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorization(UnauthorizedException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN, request, "AUTHORIZATION_ERROR");
     }
 
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidToken(InvalidTokenException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, request, "INVALID_TOKEN");
+    @ExceptionHandler(AccountException.class)
+    public ResponseEntity<ErrorResponse> handleAccount(AccountException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN, request, "ACCOUNT_ERROR");
     }
-
-    // ╔════════════════════════════════════════════════════╗
-    // ║         EXCEPCIONES FUNCIONALES DEL SISTEMA        ║
-    // ╚════════════════════════════════════════════════════╝
 
     @ExceptionHandler(BookingException.class)
-    public ResponseEntity<ErrorResponse> handleBookingException(BookingException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleBooking(BookingException ex, HttpServletRequest request) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "BOOKING_ERROR");
     }
 
-    @ExceptionHandler(AdminRecoveryEmailException.class)
-    public ResponseEntity<ErrorResponse> handleAdminRecoveryEmail(AdminRecoveryEmailException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request, "ADMIN_RECOVERY_EMAIL_NOT_CONFIGURED");
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "BUSINESS_ERROR");
+    }
+
+    @ExceptionHandler(ConfigurationException.class)
+    public ResponseEntity<ErrorResponse> handleConfiguration(ConfigurationException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request, "CONFIGURATION_ERROR");
+    }
+
+    @ExceptionHandler(PasswordException.class)
+    public ResponseEntity<ErrorResponse> handlePassword(PasswordException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "PASSWORD_ERROR");
+    }
+
+    @ExceptionHandler(DataException.class)
+    public ResponseEntity<ErrorResponse> handleData(DataException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "DATA_ERROR");
     }
 
     // ╔════════════════════════════════════════════════════╗
-    // ║       ERRORES GENERALES Y NO CONTROLADOS           ║
+    // ║ ERRORES DE VALIDACIÓN EN FORMULARIOS              ║
+    // ╚════════════════════════════════════════════════════╝
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(
+            org.springframework.web.bind.MethodArgumentNotValidException ex, HttpServletRequest request) {
+
+        List<String> errorList = new ArrayList<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            errorList.add(fieldError.getField() + ": " + fieldError.getDefaultMessage());
+        }
+
+        log.warn("Errores de validación detectados: {}", errorList);
+        return buildErrorResponse(MessageConstants.VALIDATION_ERROR, HttpStatus.BAD_REQUEST, request,
+                "VALIDATION_ERROR", errorList);
+    }
+
+    // ╔════════════════════════════════════════════════════╗
+    // ║ ERRORES GENÉRICOS Y NO CONTROLADOS                ║
     // ╚════════════════════════════════════════════════════╝
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
-        log.warn("Parámetros no válidos en la solicitud: {}", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex,
+                                                               HttpServletRequest request) {
+        log.warn("Parámetros no válidos: {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, "ILLEGAL_ARGUMENT");
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception ex, HttpServletRequest request) {
-        log.error("Excepción inesperada: {}", ex.getMessage(), ex);
-        return buildErrorResponse("Ha ocurrido un error inesperado.", HttpStatus.INTERNAL_SERVER_ERROR, request, "INTERNAL_SERVER_ERROR");
+        log.error("Error inesperado: {}", ex.getMessage(), ex);
+        return buildErrorResponse(MessageConstants.UNEXPECTED_ERROR, HttpStatus.INTERNAL_SERVER_ERROR, request,
+                "INTERNAL_SERVER_ERROR");
     }
 
     // ╔════════════════════════════════════════════════════╗
-    // ║     MÉTODO INTERNO PARA CONSTRUIR LA RESPUESTA     ║
+    // ║ RESPUESTAS DE ERROR                                ║
     // ╚════════════════════════════════════════════════════╝
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, HttpServletRequest request, String errorCode) {
+    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status,
+                                                             HttpServletRequest request, String errorCode,
+                                                             List<String> errors) {
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(status.value());
@@ -91,6 +122,13 @@ public class GlobalExceptionHandler {
         error.setMessage(message);
         error.setPath(request.getRequestURI());
         error.setErrorCode(errorCode);
+        error.setErrors(errors);
+
         return new ResponseEntity<>(error, status);
+    }
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status,
+                                                             HttpServletRequest request, String errorCode) {
+        return buildErrorResponse(message, status, request, errorCode, null);
     }
 }

@@ -12,6 +12,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.petcare.domain.user.User;
+import com.petcare.domain.user.UserService;
+import com.petcare.validators.UserValidator;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,40 +31,58 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 	private final JwtUtil jwtUtil;
 	private final UserDetailsService userDetailsService;
+	private final UserService userService;
+
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, 
-									@NonNull HttpServletResponse response,
-									@NonNull FilterChain filterChain) throws ServletException, IOException {
+	                                @NonNull HttpServletResponse response,
+	                                @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-		log.debug("Filtro JWT evaluando la petición: {}", request.getRequestURI());
+	    log.debug("Filtro JWT evaluando la petición: {}", request.getRequestURI());
 
-		String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+	    String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-			filterChain.doFilter(request, response);
-			return;
-		}
+	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+	        filterChain.doFilter(request, response);
+	        return;
+	    }
 
-		String token = authHeader.substring(7);
-		String email = jwtUtil.extractUsername(token);
+	    String token = authHeader.substring(7);
+	    String email = jwtUtil.extractUsername(token);
 
-		if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-			UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+	    if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+	        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-			if (jwtUtil.isTokenValid(token, userDetails)) {
-				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-						null, userDetails.getAuthorities());
+	        if (jwtUtil.isTokenValid(token, userDetails)) {
+	            User user = null; // ← 1. Declaramos user fuera
 
-				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(authToken);
+	            if (userDetails instanceof CustomUserDetails customDetails) {
+	                user = customDetails.getUser(); // ← 2. Lo asignamos dentro
 
-				log.info("JWT válido para usuario: {}", email);
-			} else {
-				log.warn("Token JWT inválido para usuario: {}", email);
-			}
-		}
+	                if (UserValidator.updateLastAccess(user)) {
+	                    userService.saveForUserType(user);
+	                    log.info("Último acceso actualizado para: {}", user.getUsername());
+	                }
+	            }
 
-		filterChain.doFilter(request, response);
+	            if (user != null) {
+	            	UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+	            		    user, null, userDetails.getAuthorities()
+	            		);
+	                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+	                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+	                log.info("JWT válido para usuario: {}", email);
+	            } else {
+	                log.warn("No se pudo obtener el usuario desde CustomUserDetails");
+	            }
+	        } else {
+	            log.warn("Token JWT inválido para usuario: {}", email);
+	        }
+	    }
+
+
+	    filterChain.doFilter(request, response);
 	}
 }

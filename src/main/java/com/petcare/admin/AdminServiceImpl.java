@@ -1,30 +1,39 @@
 package com.petcare.admin;
 
+import com.petcare.admin.dto.AdminBookingStats;
+import com.petcare.admin.dto.AdminServiceStats;
+import com.petcare.domain.booking.Booking;
+import com.petcare.domain.booking.BookingRepository;
+import com.petcare.domain.client.Client;
+import com.petcare.domain.client.ClientRepository;
+import com.petcare.domain.employee.Employee;
+import com.petcare.domain.employee.EmployeeRepository;
+import com.petcare.domain.employee.EmployeeService;
+import com.petcare.domain.employee.dto.EmployeeRequest;
+import com.petcare.domain.product.ProductService;
+import com.petcare.domain.user.User;
+import com.petcare.domain.user.UserRepository;
+import com.petcare.domain.user.UserService;
+import com.petcare.domain.user.dto.UserMapper;
+import com.petcare.domain.user.dto.UserUpdate;
 import com.petcare.enums.AccountStatus;
 import com.petcare.enums.BookingStatus;
 import com.petcare.enums.BookingType;
 import com.petcare.enums.Role;
 import com.petcare.exceptions.*;
-import com.petcare.model.booking.Booking;
-import com.petcare.model.booking.BookingRepository;
-import com.petcare.model.client.*;
-import com.petcare.model.employee.*;
-import com.petcare.model.employee.dto.EmployeeRegisterRequest;
-import com.petcare.model.user.*;
-import com.petcare.admin.dto.BookingStatsResponse;
-import com.petcare.email.EmailService;
+import com.petcare.validators.ProductValidator;
+import com.petcare.validators.UserValidator;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,204 +41,259 @@ import java.util.Optional;
 @Slf4j
 public class AdminServiceImpl implements AdminService {
 
-	private final EmployeeRepository employeeRepository;
-	private final BookingRepository bookingRepository;
-	private final ClientRepository clientRepository;
-	private final EmployeeService employeeService;
-	private final EmailService emailService;
-	private final UserRepository userRepository;
-	private final UserService userService;
+    private final EmployeeRepository employeeRepository;
+    private final ClientRepository clientRepository;
+    private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final EmployeeService employeeService;
+    private final ProductService productService;
 
-	@Value("${system.admin.recovery.email}")
-	private String adminRecoveryEmail;
+	// ╔════════════════════════════════════════════════════╗
+	// ║ GESTIÓN DE USUARIOS								║
+	// ╚════════════════════════════════════════════════════╝
+    
+    @Override
+    public void activateUser(Long userId) {
+        User user = UserValidator.requireUserById(userRepository, userId);
+        user.setAccountStatus(AccountStatus.ACTIVA);
+        userService.saveForUserType(user);
+        log.info("Cuenta activada para el usuario con ID: {}", userId);
+    }
 
-	@Override
-	public Employee registerNewEmployee(EmployeeRegisterRequest request) {
-		if (userRepository.existsByUsername(request.getRecoveryEmail())) {
-			throw new UserAlreadyExistsException(
-					"Ya existe un usuario registrado con el correo: " + request.getRecoveryEmail());
-		}
+    @Override
+    public void deactivateUser(Long userId) {
+        User user = UserValidator.requireUserById(userRepository, userId);
+        user.setAccountStatus(AccountStatus.BLOQUEADA);
+        userService.saveForUserType(user);
+        log.info("Cuenta bloqueada para el usuario con ID: {}", userId);
+    }
 
-		Employee employee = new Employee();
-		employee.setRecoveryEmail(request.getRecoveryEmail());
-		employee.setName(request.getName());
-		employee.setLastName1(request.getLastName1());
-		employee.setLastName2(request.getLastName2());
-		employee.setProfile(request.getProfile());
-		employee.setStartDate(request.getStartDate());
-		employee.setRole(Role.EMPLEADO);
+    @Override
+    public void deleteUser(Long userId) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            log.warn("No se encontró ningún usuario con id {}", userId);
+            throw new NotFoundException("Usuario no encontrado con ID " + userId);
+        }
 
-		log.info("Se ha delegado el registro de un nuevo empleado EmployeeService...");
-		return employeeService.registerEmployee(employee);
-	}
+        User user = optionalUser.get();
+        Role role = user.getRole();
 
-	@Override
-	public void activateUser(Long userId) {
-		Optional<User> userOptional = userRepository.findById(userId);
-		if (!userOptional.isPresent()) {
-			log.warn("La cuenta de usuario con ID {} ha sido activada correctamente.", userId);
-			throw new UserNotFoundException("Usuario no encontrado con ID: " + userId);
-		}
+        if (role == Role.CLIENTE) {
+            clientRepository.deleteById(userId);
+            log.info("Cliente con id = {} eliminado con éxito.", userId);
+        } else if (role == Role.EMPLEADO) {
+            employeeRepository.deleteById(userId);
+            log.info("Empleado con id = {} eliminado correctamente.", userId);
+        } else {
+            userRepository.deleteById(userId);
+            log.info("Usuario con rol {} e id = {} eliminado del sistema.", role.name(), userId);
+        }
+    }
 
-		User user = userOptional.get();
-		user.setAccountStatus(AccountStatus.ACTIVA);
-		userService.saveForUserType(user);
-		log.info("Cuenta ACTIVA para el usuario con ID: {}", userId);
-	}
+    @Override
+    public User findUserById(Long id) {
+        return UserValidator.requireUserById(userRepository, id);
+    }
 
-	@Override
-	public void deactivateUser(Long userId) {
-		Optional<User> userOptional = userRepository.findById(userId);
-		if (!userOptional.isPresent()) {
-			log.warn("Usuario no encontrado con ID: {}", userId);
-			throw new UserNotFoundException("Usuario no encontrado con ID: " + userId);
-		}
+    @Override
+    public void updateUser(Long userId, UserUpdate request) {
+        User user = UserValidator.requireUserById(userRepository, userId);
+        UserMapper.updateEntityFromRequest(request, user);
+        userService.saveForUserType(user);
+        log.info("Usuario actualizado correctamente. ID: {}", userId);
+    }
+    
+    @Override
+    public List<User> getAllUsers() {
+    	return userRepository.findAll();
+    }
 
-		User user = userOptional.get();
-		user.setAccountStatus(AccountStatus.BLOQUEADA);
-		userService.saveForUserType(user);
-		log.info("La cuenta de usuario con ID {} ha sido correctamente desactivada.", userId);
-	}
+    // ╔════════════════════════════════════════════════════╗
+ 	// ║ GESTIÓN DE EMPLEADOS								║
+ 	// ╚════════════════════════════════════════════════════╝
 
-	@Override
-	public void deleteUser(Long userId) {
-		Optional<Client> clientOptional = clientRepository.findById(userId);
-		if (clientOptional.isPresent()) {
-			clientRepository.deleteById(userId);
-			log.info("Cliente eliminado con ID: {}", userId);
-			return;
-		}
+    @Override
+    public Employee registerEmployee(EmployeeRequest request) {
+        return employeeService.registerEmployee(request);
+    }
 
-		Optional<Employee> employeeOptional = employeeRepository.findById(userId);
-		if (employeeOptional.isPresent()) {
-			employeeRepository.deleteById(userId);
-			log.info("Empleado eliminado con ID: {}", userId);
-			return;
-		}
+    @Override
+    public List<Employee> listEmployees() {
+        return employeeRepository.findAll();
+    }
 
-		log.warn("No se encontró ningún usuario con ID: {}", userId);
-		throw new UserNotFoundException("No se encontró ningún usuario con ID: " + userId);
-	}
+    @Override
+    public Employee findEmployeeById(Long id) {
+        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
+        if (optionalEmployee.isPresent()) {
+            return optionalEmployee.get();
+        }
 
-	@Override
-	public List<Employee> listEmployees() {
-		return employeeRepository.findAll();
-	}
+        log.warn("Empleado no encontrado con ID: {}", id);
+        throw new NotFoundException("Empleado no encontrado con ID: " + id);
+    }
 
-	@Override
-	public List<Client> listClients() {
-		return clientRepository.findAll();
-	}
+    // ╔════════════════════════════════════════════════════╗
+ 	// ║ GESTIÓN DE CLIENTES								║
+ 	// ╚════════════════════════════════════════════════════╝
 
-	@Override
-	public User findUserById(Long id) {
-		Optional<User> userOptional = userRepository.findById(id);
-		if (!userOptional.isPresent()) {
-			log.warn("Usuario no encontrado con ID: {}", id);
-			throw new UserNotFoundException("Usuario no encontrado con ID: " + id);
-		}
-		return userOptional.get();
-	}
+    @Override
+    public List<Client> listClients() {
+        return clientRepository.findAll();
+    }
 
-	@Override
-	public Client findClientById(Long id) {
-		Optional<Client> clientOptional = clientRepository.findById(id);
-		if (!clientOptional.isPresent()) {
-			log.warn("Cliente no encontrado con ID: {}", id);
-			throw new UserNotFoundException("Cliente no encontrado con ID: " + id);
-		}
-		return clientOptional.get();
-	}
+    @Override
+    public Client findClientById(Long id) {
+        Optional<Client> optionalClient = clientRepository.findById(id);
+        if (optionalClient.isPresent()) {
+            return optionalClient.get();
+        }
 
-	@Override
-	public Employee findEmployeeById(Long id) {
-		Optional<Employee> employeeOptional = employeeRepository.findById(id);
-		if (!employeeOptional.isPresent()) {
-			log.warn("Empleado no encontrado con ID: {}", id);
-			throw new UserNotFoundException("Empleado no encontrado con ID: " + id);
-		}
-		return employeeOptional.get();
-	}
+        log.warn("Cliente no encontrado con ID: {}", id);
+        throw new NotFoundException("Cliente no encontrado con ID: " + id);
+    }
 
-	@Override
-	public void recoverAdminPassword() {
-		if (adminRecoveryEmail == null || adminRecoveryEmail.isBlank()) {
-			log.error("El correo de recuperación del administrador no está configurado.");
-			throw new AdminRecoveryEmailException();
-		}
+    // ╔════════════════════════════════════════════════════╗
+ 	// ║ GESTIÓN DE PRODUCTOS								║
+ 	// ╚════════════════════════════════════════════════════╝
 
-		try {
-			String recoveryLink = "https://portal.petcare360.com/admin-recover-password";
-			emailService.sendPasswordRecoveryEmail(adminRecoveryEmail, recoveryLink);
-			log.info("Correo de recuperación de administrador enviado a: {}", adminRecoveryEmail);
-		} catch (Exception e) {
-			log.error("Error enviando correo de recuperación al administrador: {}", e.getMessage(), e);
-			throw new RuntimeException("No se pudo enviar el correo de recuperación de contraseña al administrador", e);
-		}
-	}
+    @Override
+    public void updateProductPrice(Long productId, double newPrice) {
+        ProductValidator.validatePrice(newPrice);
+        log.info("Validación superada para precio. Producto ID: {}, nuevo precio: {}", productId, newPrice);
+        productService.updatePrice(productId, newPrice);
+    }
 
-	@Override
-	public void updateProductPrice(Long productId, double newPrice) {
-		log.info("Precio actualizado para el producto con ID: {} a nuevo precio: {}", productId, newPrice);
-	}
+    @Override
+    public void updateStock(Long productId, int quantity) {
+        ProductValidator.validateStock(quantity);
+        log.info("Validación superada para stock. Producto ID: {}, nueva cantidad: {}", productId, quantity);
+        productService.updateStock(productId, quantity);
+    }
 
-	@Override
-	public void updateStock(Long productId, int quantity) {
-		log.info("Stock actualizado para el producto con ID: {} a nueva cantidad: {}", productId, quantity);
-	}
+    // ╔════════════════════════════════════════════════════╗
+ 	// ║ GESTIÓN DE ESTADÍSTICAS							║
+ 	// ╚════════════════════════════════════════════════════╝
+     
+    @Override
+    public AdminBookingStats getBookingStats() {
+        List<Booking> allBookings = bookingRepository.findAll();
 
-	@Override
-	public BookingStatsResponse getBookingStats() {
-	    List<Booking> allBookings = bookingRepository.findAll();
-	    
-	    int totalBookings = allBookings.size();
-	    int confirmed = 0;
-	    int cancelled = 0;
-	    int aborted = 0;
+        int totalBookings = allBookings.size();
+        int confirmed = 0;
+        int cancelled = 0;
+        int aborted = 0;
+        int completed = 0;
 
-	    Map<BookingType, Integer> bookingsByType = new HashMap<>();
-	    Map<BookingStatus, Integer> bookingsByStatus = new HashMap<>();
+        Map<BookingType, Integer> bookingsByType = new HashMap<>();
+        Map<BookingStatus, Integer> bookingsByStatus = new HashMap<>();
 
-	    for (Booking booking : allBookings) {
-	        BookingStatus status = booking.getStatus();
-	        BookingType type = booking.getType();
+        for (Booking booking : allBookings) {
+            BookingStatus status = booking.getStatus();
+            BookingType type = booking.getType();
 
-	        // Contar estados
-	        if (status == BookingStatus.CONFIRMADA) confirmed++;
-	        if (status == BookingStatus.CANCELADA) cancelled++;
-	        if (status == BookingStatus.ANULADA) aborted++;
+            if (status == BookingStatus.CONFIRMADA) confirmed++;
+            if (status == BookingStatus.CANCELADA) cancelled++;
+            if (status == BookingStatus.ANULADA) aborted++;
+            if (status == BookingStatus.COMPLETADA) completed++;
 
-	        // Acumular por estado
-	        if (!bookingsByStatus.containsKey(status)) {
-	            bookingsByStatus.put(status, 1);
-	        } else {
-	            int count = bookingsByStatus.get(status);
-	            bookingsByStatus.put(status, count + 1);
-	        }
+            if (bookingsByStatus.containsKey(status)) {
+                bookingsByStatus.put(status, bookingsByStatus.get(status) + 1);
+            } else {
+                bookingsByStatus.put(status, 1);
+            }
 
-	        // Acumular por tipo
-	        if (!bookingsByType.containsKey(type)) {
-	            bookingsByType.put(type, 1);
-	        } else {
-	            int count = bookingsByType.get(type);
-	            bookingsByType.put(type, count + 1);
-	        }
-	    }
+            if (bookingsByType.containsKey(type)) {
+                bookingsByType.put(type, bookingsByType.get(type) + 1);
+            } else {
+                bookingsByType.put(type, 1);
+            }
+        }
 
-	    int totalClients = clientRepository.findAll().size();
-	    int totalEmployees = employeeRepository.findAll().size();
+        AdminBookingStats stats = new AdminBookingStats();
+        stats.setTotalBookings(totalBookings);
+        stats.setConfirmedBookings(confirmed);
+        stats.setCancelledBookings(cancelled);
+        stats.setAbortedBookings(aborted);
+        stats.setCompletedBookings(completed);
+        stats.setTotalClients(clientRepository.findAll().size());
+        stats.setTotalEmployees(employeeRepository.findAll().size());
+        stats.setBookingsByType(bookingsByType);
+        stats.setBookingsByStatus(bookingsByStatus);
 
-	    BookingStatsResponse stats = new BookingStatsResponse();
-	    stats.setTotalBookings(totalBookings);
-	    stats.setConfirmedBookings(confirmed);
-	    stats.setCancelledBookings(cancelled);
-	    stats.setAbortedBookings(aborted);
-	    stats.setTotalClients(totalClients);
-	    stats.setTotalEmployees(totalEmployees);
-	    stats.setBookingsByType(bookingsByType);
-	    stats.setBookingsByStatus(bookingsByStatus);
+        log.info("Estadísticas de citas generadas correctamente.");
+        return stats;
+    }
 
-	    log.info("Estadísticas de citas generadas correctamente.");
-	    return stats;
-	}
+    @Override
+    public AdminServiceStats getServiceStats() {
+        List<Booking> allBookings = bookingRepository.findAll();
+
+        Map<BookingType, Integer> totalByService = new EnumMap<>(BookingType.class);
+        int totalBookings = allBookings.size();
+
+        for (Booking booking : allBookings) {
+            BookingType type = booking.getType();
+
+            if (totalByService.containsKey(type)) {
+                totalByService.put(type, totalByService.get(type) + 1);
+            } else {
+                totalByService.put(type, 1);
+            }
+        }
+
+        BookingType mostDemanded = null;
+        BookingType leastDemanded = null;
+        int max = Integer.MIN_VALUE;
+        int min = Integer.MAX_VALUE;
+
+        for (BookingType type : totalByService.keySet()) {
+            int count = totalByService.get(type);
+            if (count > max) {
+                max = count;
+                mostDemanded = type;
+            }
+            if (count < min) {
+                min = count;
+                leastDemanded = type;
+            }
+        }
+
+        Map<BookingType, Double> percentageByService = new EnumMap<>(BookingType.class);
+        for (BookingType type : totalByService.keySet()) {
+            int count = totalByService.get(type);
+
+            double percentage = 0.0;
+            if (totalBookings > 0) {
+                percentage = (count * 100.0) / totalBookings;
+            }
+
+            double rounded = Math.round(percentage * 100.0) / 100.0;
+            percentageByService.put(type, rounded);
+        }
+
+        AdminServiceStats response = new AdminServiceStats();
+        response.setTotalBookings(totalBookings);
+        response.setMostDemandedService(mostDemanded);
+        response.setLeastDemandedService(leastDemanded);
+        response.setTotalByService(totalByService);
+        response.setPercentageByService(percentageByService);
+
+        log.info("Estadísticas por servicio generadas correctamente.");
+        return response;
+    }
+    
+    @Override
+    public Page<Booking> getBookingsFromLastDays(Integer days, Pageable pageable) {
+        log.info("Recuperando citas: últimos {} días con paginación {}", days, pageable);
+
+        if (days == null || days <= 0) {
+            return bookingRepository.findAll(pageable);
+        }
+
+        LocalDate cutoffDate = LocalDate.now().minusDays(days);
+        return bookingRepository.findByDateAfter(cutoffDate, pageable);
+    }
 }

@@ -9,19 +9,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.petcare.auth.dto.LoginRequest;
+import com.petcare.auth.dto.LoginResponse;
 import com.petcare.auth.security.JwtUtil;
-import com.petcare.email.EmailService;
+import com.petcare.domain.client.Client;
+import com.petcare.domain.client.ClientService;
+import com.petcare.domain.client.dto.ClientRequest;
+import com.petcare.domain.user.User;
+import com.petcare.domain.user.UserAccountService;
+import com.petcare.domain.user.UserService;
 import com.petcare.enums.AccountStatus;
-import com.petcare.auth.dto.AuthResponse;
-import com.petcare.exceptions.IncorrectPasswordException;
-import com.petcare.exceptions.UserNotFoundException;
-import com.petcare.model.client.Client;
-import com.petcare.model.client.dto.ClientRegisterRequest;
-import com.petcare.model.client.ClientService;
-import com.petcare.model.user.User;
-import com.petcare.model.user.UserAccountService;
-import com.petcare.model.user.UserService;
-import com.petcare.utils.Constants;
+import com.petcare.exceptions.*;
+import com.petcare.notification.SystemEmailService;
+import com.petcare.utils.constants.UrlConstants;
+import com.petcare.validators.AccountValidator;
+import com.petcare.validators.LoginValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-
 public class AuthServiceImpl implements AuthService {
 
 	private final UserService userService;
@@ -37,7 +37,8 @@ public class AuthServiceImpl implements AuthService {
 	private final ClientService clientService;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
-	private final EmailService emailService;
+	private final SystemEmailService systemEmailService;
+	private final LoginValidator loginValidator;
 
 	@Value("${system.admin.email}")
 	private String adminEmail;
@@ -46,153 +47,110 @@ public class AuthServiceImpl implements AuthService {
 	private String adminPassword;
 
 	@Override
-	public AuthResponse register(ClientRegisterRequest request) {
-	    Client client = clientService.registerClient(request);
-	    String token = jwtUtil.generateTokenByUser(client);
+	public LoginResponse register(ClientRequest request) {
+		Client client = clientService.registerClient(request);
+		String token = jwtUtil.generateTokenByUser(client);
 
-	    emailService.sendWelcomeEmail(
-	        client.getUsername(),
-	        client.getRole().name(),
-	        client.getName(),
-	        null
-	    );
+		systemEmailService.sendWelcomeEmail(
+			client.getUsername(),
+			client.getRole().name(),
+			client.getName(),
+			null
+		);
 
-	    return new AuthResponse(token, client.getId(),client.getName(), client.getUsername(), client.getRole());
+		return new LoginResponse(token, client.getId(), client.getName(), client.getUsername(), client.getRole(), token);
 	}
 
 	@Override
-	public AuthResponse login(LoginRequest request) {
-	    String username = request.getUsername();
-	    String password = request.getPassword();
+	public LoginResponse login(LoginRequest request) {
+		String username = request.getUsername();
+		String password = request.getPassword();
 
-	    User user = userService.findUserByUsername(username);
+		User user = userService.getUserByUsername(username);
 
-	    if (user.getAccountStatus() == AccountStatus.BLOQUEADA) {
-	        log.warn("Acceso denegado: cuenta bloqueada para {}", username);
-	        throw new IncorrectPasswordException("Tu cuenta está bloqueada. Revisa tu correo para desbloquearla.");
-	    }
+		AccountValidator.validateAccountIsActive(user);
 
-	    if (!password.equals(adminPassword) && !passwordEncoder.matches(password, user.getPassword())) {
-	        int attempts = user.getFailedLoginAttempts() != null ? user.getFailedLoginAttempts() : 0;
-	        user.setFailedLoginAttempts(attempts + 1);
+		if (!password.equals(adminPassword) && !passwordEncoder.matches(password, user.getPassword())) {
+		    loginValidator.onFailedLoginAttempt(user); // ya guarda y lanza excepción si toca
+		    throw new AuthenticationException("Credenciales inválidas. Verifica el correo y la contraseña.");
+		}
 
-	        if (user.getFailedLoginAttempts() >= 3) {
-	            user.setAccountStatus(AccountStatus.BLOQUEADA);
-	            String token = UUID.randomUUID().toString();
-	            user.setRecoveryToken(token);
-	            user.setRecoveryTokenExpiration(LocalDateTime.now().plusHours(Constants.PASSWORD_RESET_EXPIRATION_HOURS));
-	            userService.saveForUserType(user);
-	            log.error("Cuenta bloqueada para usuario {}", username);
-	            String resetLink = Constants.buildRecoveryLink(token);
-	            emailService.sendAccountBlockedEmail(user.getRecoveryEmail(), user.getName(), resetLink);
-	        } else {
-	            userService.saveForUserType(user);
-	        }
-	        throw new IncorrectPasswordException();
-	    }
+		user.setFailedLoginAttempts(0);
+		user.setLastAccess(LocalDateTime.now());
+		userService.saveForUserType(user);
 
-	    user.setFailedLoginAttempts(0);
-	    user.setLastAccess(LocalDateTime.now());
-	    userService.saveForUserType(user);
-
-	    String token = jwtUtil.generateTokenByUser(user);
-	    return new AuthResponse(token, user.getId(), user.getName(), user.getUsername(), user.getRole());
+		String token = jwtUtil.generateTokenByUser(user);
+		return new LoginResponse(token, user.getId(), user.getName(), user.getUsername(), user.getRole(), token);
 	}
 
+
+
 	@Override
-	public boolean reactivateAccount(String token) {
+	public boolean changePassword(String username, String newPassword, String confirmPassword) {
+		User user = userService.getUserByUsername(username);
+
+		if (!newPassword.equals(confirmPassword)) {
+			throw new BusinessException("Las contraseñas no coinciden.");
+		}
+
+		user.setPassword(passwordEncoder.encode(newPassword));
+		user.setLastPasswordChange(LocalDateTime.now());
+		userService.saveForUserType(user);
+		log.info("Contraseña cambiada correctamente para: {}", username);
+		return true;
+	}
+
+
+	@Override
+	public void sendRecoveryLink(String email) {
+		String token = UUID.randomUUID().toString();
+		LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
+
+		Optional<User> optionalUser = userAccountService.findByEmailForRecovery(email);
+		if (optionalUser.isEmpty()) {
+			throw new NotFoundException("No se encontró ningún usuario con ese correo.");
+		}
+
+		User user = optionalUser.get();
+		user.setRecoveryToken(token);
+		user.setRecoveryTokenExpiration(expiration);
+		userService.saveForUserType(user);
+
+		String recoveryLink = UrlConstants.buildRecoveryLink(token);
+		systemEmailService.sendPasswordRecoveryEmail(email, user.getName(), recoveryLink);
+	}
+	
+	@Override
+	public boolean recoverAccount(String token, String newPassword, String confirmPassword) {
 	    if (token == null || token.isBlank()) {
-	        log.warn("Token de reactivación vacío o nulo");
-	        return false;
+	        throw new BusinessException("El token es obligatorio para recuperar la cuenta.");
 	    }
 
-	    Optional<User> userOpt = userAccountService.findByRecoveryToken(token);
-	    if (userOpt.isEmpty()) {
-	        log.warn("No se encontró usuario con token de reactivación: {}", token);
-	        return false;
-	    }
-
-	    User user = userOpt.get();
-
-	    if (user.getRecoveryTokenExpiration() == null || user.getRecoveryTokenExpiration().isBefore(LocalDateTime.now())) {
-	        log.warn("Token de reactivación expirado para el usuario: {}", user.getUsername());
-	        return false;
-	    }
-
-	    user.setAccountStatus(AccountStatus.ACTIVA);
-	    user.setRecoveryToken(null);
-	    user.setRecoveryTokenExpiration(null);
-	    user.setLastAccess(LocalDateTime.now());
-	    userService.saveForUserType(user);
-	    log.info("Cuenta reactivada correctamente para usuario: {}", user.getUsername());
-	    return true;
-	}
-
-	@Override
-	public boolean changeAuthUserPassword(String username, String newPassword) {
-	    try {
-	        User user = userService.findUserByUsername(username);
-	        user.setPassword(passwordEncoder.encode(newPassword));
-	        user.setLastPasswordChange(LocalDateTime.now());
-	        userService.saveForUserType(user);
-	        return true;
-	    } catch (UserNotFoundException e) {
-	        return false;
-	    }
-	}
-
-	@Override
-	public boolean resetPasswordWithToken(String token, String newPassword) {
 	    Optional<User> optionalUser = userAccountService.findByRecoveryToken(token);
-	    if (optionalUser.isEmpty()) return false;
+	    if (optionalUser.isEmpty()) {
+	        throw new NotFoundException("No se ha encontrado ningún usuario con ese token.");
+	    }
 
 	    User user = optionalUser.get();
+
 	    if (user.getRecoveryTokenExpiration() == null || user.getRecoveryTokenExpiration().isBefore(LocalDateTime.now())) {
-	        return false;
+	        throw new BusinessException("El token ha expirado. Solicita uno nuevo.");
+	    }
+
+	    if (!newPassword.equals(confirmPassword)) {
+	        throw new BusinessException("Las contraseñas no coinciden.");
 	    }
 
 	    user.setPassword(passwordEncoder.encode(newPassword));
 	    user.setLastPasswordChange(LocalDateTime.now());
-	    if (user.getAccountStatus() == AccountStatus.BLOQUEADA) {
-	        user.setAccountStatus(AccountStatus.ACTIVA);
-	        log.info("Cuenta desbloqueada automáticamente para usuario: {}", user.getUsername());
-	    }
 	    user.setFailedLoginAttempts(0);
 	    user.setRecoveryToken(null);
 	    user.setRecoveryTokenExpiration(null);
+	    user.setAccountStatus(AccountStatus.ACTIVA); // 🔓 Reactiva la cuenta automáticamente
+
 	    userService.saveForUserType(user);
-	    log.info("Contraseña restablecida y cuenta reactivada para usuario: {}", user.getUsername());
+	    log.info("Cuenta reactivada y contraseña actualizada correctamente para: {}", user.getUsername());
+
 	    return true;
-	}
-
-	@Override
-	public void initiatePasswordRecovery(String email) {
-	    String token = UUID.randomUUID().toString();
-	    LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
-	    try {
-	        User user = userService.findUserByUsername(email);
-	        user.setRecoveryToken(token);
-	        user.setRecoveryTokenExpiration(expiration);
-	        userService.saveForUserType(user);
-	        emailService.sendPasswordRecoveryEmail(user.getUsername(), token);
-	    } catch (UserNotFoundException e) {
-	        log.warn("No se pudo iniciar la recuperación porque no se encontró el usuario con username: {}", email);
-	    }
-	}
-
-	@Override
-	public void requestPasswordRecovery(String email) {
-	    String token = UUID.randomUUID().toString();
-	    LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
-	    Optional<User> optionalUser = userAccountService.findByEmailForRecovery(email);
-	    if (optionalUser.isEmpty()) {
-	        throw new UserNotFoundException("No se encontró ningún usuario con ese correo.");
-	    }
-
-	    User user = optionalUser.get();
-	    user.setRecoveryToken(token);
-	    user.setRecoveryTokenExpiration(expiration);
-	    userService.saveForUserType(user);
-	    emailService.sendPasswordRecoveryEmail(email, token);
 	}
 }
