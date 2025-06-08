@@ -30,7 +30,7 @@ public final class UrlConstants {
 	// ║ URLs del frontend					  ║
 	// ╚══════════════════════════════════════╝
 
-	public static final String FRONTEND_BASE_URL = "http://localhost:5173";
+	public static final String FRONTEND_BASE_URL = "https://frontend-ten-puce-57.vercel.app/";
 
 	public static final String LOGIN_URL = FRONTEND_BASE_URL + "/login";
 	public static final String RECOVERY_URL = FRONTEND_BASE_URL + "/recover-account?token=";
