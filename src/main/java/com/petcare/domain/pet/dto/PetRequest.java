@@ -34,9 +34,6 @@ public class PetRequest {
 
     @NotNull(message = "El sexo es obligatorio")
     private PetGender petGender;
-    
-    @Size(max = 30, message = "El género personalizado no puede tener más de 30 caracteres")
-    private String customGender;
 
     @NotNull(message = "El tipo es obligatorio")
     private PetType type;

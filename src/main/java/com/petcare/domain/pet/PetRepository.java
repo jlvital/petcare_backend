@@ -10,5 +10,8 @@ import org.springframework.stereotype.Repository;
 public interface PetRepository extends JpaRepository<Pet, Long> {
 	
 	List<Pet> findByClientId(Long clientId);
+	
 	Optional<Pet> findByChipNumber(String chip);
+
+	Optional<Pet> findByIdAndClientId(Long id, Long clientId);
 }

@@ -34,9 +34,6 @@ public class PetUpdate implements Serializable {
 
     private PetGender petGender;
     private PetType type;
-    
-    @Size(max = 30, message = "El género personalizado no puede tener más de 30 caracteres")
-    private String customGender;
 
     @Size(max = 30, message = "El tipo personalizado no puede superar los 30 caracteres")
     private String customType;

@@ -10,15 +10,13 @@ package com.petcare.enums;
  * <ul>
  *     <li>{@code MACHO} – Masculino</li>
  *     <li>{@code HEMBRA} – Femenino</li>
- *     <li>{@code OTRO} – Género no definido o personalizado</li>
  * </ul>
  * Todos los valores incluyen una etiqueta legible para mostrar en la interfaz.
  */
 public enum PetGender implements Labeled {
 
     MACHO("Macho"),
-    HEMBRA("Hembra"),
-    OTRO("Otro");
+    HEMBRA("Hembra");
 
     /** Texto descriptivo que se mostrará al usuario. */
     private final String label;
@@ -29,7 +27,7 @@ public enum PetGender implements Labeled {
 
     /**
      * Devuelve la etiqueta legible asociada al género.
-     * @return Texto visible como "Macho", "Hembra" u "Otro".
+     * @return Texto visible como "Macho" o "Hembra".
      */
     @Override
     public String getLabel() {

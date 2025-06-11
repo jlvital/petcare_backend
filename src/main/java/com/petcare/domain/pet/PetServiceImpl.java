@@ -28,19 +28,6 @@ public class PetServiceImpl implements PetService {
     // ║       REGISTRO DE MASCOTAS                                ║
     // ╚════════════════════════════════════════════════════════════╝
 
-    /**
-     * Registra una nueva mascota para el cliente autenticado.
-     * <p>
-     * Se validan:
-     * - El estado de la cuenta del cliente
-     * - Su autenticación
-     * - Las reglas de negocio dependientes entre campos del formulario
-     *
-     * @param request Datos del formulario de registro de mascota.
-     * @param client Cliente autenticado.
-     * @return Mascota registrada, convertida en objeto de respuesta.
-     */
-    
     @Override
     public PetResponse registerPet(PetRequest request, Client client) {
         AccountValidator.validateAccountIsActive(client);
@@ -58,33 +45,14 @@ public class PetServiceImpl implements PetService {
     // ║       ACTUALIZACIÓN DE MASCOTAS                           ║
     // ╚════════════════════════════════════════════════════════════╝
 
-    /**
-     * Actualiza parcialmente una mascota si pertenece al cliente autenticado.
-     * <p>
-     * Se permiten modificaciones en los campos no nulos enviados por el cliente.
-     * Antes de aplicar los cambios, se realizan varias validaciones:
-     * <ul>
-     *   <li>Que el cliente esté autenticado y tenga la cuenta activa</li>
-     *   <li>Que la mascota exista y pertenezca al cliente</li>
-     *   <li>Que los nuevos datos sean coherentes según las reglas del negocio (por ejemplo: tipo personalizado o esterilización)</li>
-     * </ul>
-     * Solo se modifican los campos informados. El resto permanece sin cambios.
-     *
-     * @param petId ID de la mascota a modificar
-     * @param request datos nuevos de la mascota
-     * @param client cliente autenticado
-     * @return mascota actualizada
-     * @throws BusinessException si alguno de los datos no es válido o no cumple las reglas
-     */
-
     @Override
     public PetResponse updatePet(Long petId, PetUpdate request, Client client) {
         AccountValidator.validateAccountIsActive(client);
         ClientValidator.validateAuthenticatedClient(client);
 
-        Pet pet = PetValidator.validatePetOwner(petRepository, petId, client);
+        Pet pet = PetValidator.validatePetAccess(petRepository, petId, client); // <--- NUEVO
         PetValidator.validatePetUpdate(request);
-        
+
         PetMapper.updateEntityFromRequest(request, pet);
         Pet updated = petRepository.save(pet);
 
@@ -96,12 +64,6 @@ public class PetServiceImpl implements PetService {
     // ║       CONSULTA DE MASCOTAS DEL CLIENTE                    ║
     // ╚════════════════════════════════════════════════════════════╝
 
-    /**
-     * Devuelve todas las mascotas registradas por un cliente concreto.
-     *
-     * @param clientId ID del cliente
-     * @return lista de mascotas
-     */
     @Override
     public List<PetResponse> getPetsByClient(Long clientId) {
         List<Pet> pets = petRepository.findByClientId(clientId);
@@ -116,16 +78,20 @@ public class PetServiceImpl implements PetService {
     // ║       CONSULTA DE UNA MASCOTA POR ID                      ║
     // ╚════════════════════════════════════════════════════════════╝
 
-    /**
-     * Devuelve los datos de una mascota a partir de su ID.
-     * Se lanza excepción si no existe.
-     *
-     * @param petId ID de la mascota
-     * @return mascota encontrada
-     */
     @Override
     public PetResponse getPetById(Long petId) {
-        Pet pet = PetValidator.validatePetExists(petRepository, petId);
+        Pet pet = PetValidator.findPet(petRepository, petId); // reutiliza validación básica
         return PetMapper.toResponse(pet);
+    }
+
+    // ╔════════════════════════════════════════════════════════════╗
+    // ║       ELIMINACIÓN DE MASCOTAS                             ║
+    // ╚════════════════════════════════════════════════════════════╝
+
+    @Override
+    public void deletePet(Long petId, Client client) {
+        Pet pet = PetValidator.validatePetAccess(petRepository, petId, client); // <--- NUEVO
+        petRepository.delete(pet);
+        log.info("Mascota ID {} eliminada por cliente ID {}", petId, client.getId());
     }
 }

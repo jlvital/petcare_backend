@@ -40,7 +40,7 @@ public class PetController {
 	private final PetService petService;
 
 	// ╔══════════════════════════════════════════════════════════════╗
-	// ║ CLIENTE - GESTIÓN DE MASCOTAS (REGISTRAR, EDITAR) 			  ║
+	// ║ CLIENTE - GESTIÓN DE MASCOTAS (REGISTRAR, EDITAR, ELIMINAR)  ║
 	// ╚══════════════════════════════════════════════════════════════╝
 
 	/**
@@ -81,6 +81,21 @@ public class PetController {
 		return ResponseEntity.ok(response);
 	}
 
+	/**
+	 * Elimina una mascota del cliente autenticado.
+	 *
+	 * @param petId ID de la mascota a eliminar.
+	 * @param user Usuario autenticado (debe ser cliente).
+	 * @return Confirmación de eliminación.
+	 */
+	@DeleteMapping("/{petId}")
+	public ResponseEntity<Void> deletePet(@PathVariable Long petId,
+	                                      @AuthenticationPrincipal User user) {
+	    Client client = ClientValidator.validateUserIsClient(user);
+	    petService.deletePet(petId, client);
+	    log.info("Cliente ID {} eliminó la mascota ID {}", client.getId(), petId);
+	    return ResponseEntity.noContent().build();
+	}
 	// ╔══════════════════════════════════════════════════════════════╗
 	// ║ CLIENTE - CONSULTA DE MASCOTAS								  ║
 	// ╚══════════════════════════════════════════════════════════════╝
